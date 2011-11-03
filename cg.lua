@@ -4,15 +4,15 @@
 -- or take numerical accuracy due to some changed order of
 -- operations).
 --
--- opfunc is a function that takes a single input, the point of evaluation.
--- x is the initial point
--- params is a table of parameters and temporary allocations.
--- params.longth : max number of function evaluations
--- params.df[0,1,2,3] : if you pass torch.Tensor they will be used for temp storage
--- params.[s,x0] : if you pass torch.Tensor they will be used for temp storage
+-- ARGS:
+-- opfunc : a function that takes a single input, the point of evaluation.
+-- x      : the initial point
+-- params : a table of parameters and temporary allocations.
+--   params.longth      : max number of function evaluations
+--   params.df[0,1,2,3] : if you pass torch.Tensor they will be used for temp storage
+--   params.[s,x0]      : if you pass torch.Tensor they will be used for temp storage
 --
 function optim.cg(opfunc, x, params)
-
    -- parameters
    local params = params or {}
    local rho  = params.rho or 0.01
@@ -55,7 +55,6 @@ function optim.cg(opfunc, x, params)
    x0:resizeAs(x)
    df0:resizeAs(x)
 
-
    -- evaluate at initial point
    f1,tdf = opfunc(x)
    df1:copy(tdf)
@@ -82,101 +81,101 @@ function optim.cg(opfunc, x, params)
       local m = math.min(max,length-i)
       local success = 0
       local limit = -1
-      
+
       while true do
-	 while (f2 > f1+z1*rho*d1 or d2 > -sig*d1) and m > 0 do
-	    limit = z1
-	    if f2 > f1 then
-	       z2 = z3 - (0.5*d3*z3*z3)/(d3*z3+f2-f3)
-	    else
-	       local A = 6*(f2-f3)/z3+3*(d2+d3)
-	       local B = 3*(f3-f2)-z3*(d3+2*d2)
-	       z2 = (math.sqrt(B*B-A*d2*z3*z3)-B)/A
-	    end
-	    if z2 ~= z2 or z2 == math.huge or z2 == -math.huge then
-	       z2 = z3/2;
-	    end
-	    z2 = math.max(math.min(z2, int*z3),(1-int)*z3);
-	    z1 = z1 + z2;
-	    x:add(z2,s)
-	    f2,tdf = opfunc(x)
-	    df2:copy(tdf)
-	    i=i+1
-	    m = m - 1
-	    d2 = df2:dot(s)
-	    z3 = z3-z2;
-	 end
-	 if f2 > f1+z1*rho*d1 or d2 > -sig*d1 then
-	    break
-	 elseif d2 > sig*d1 then
-	    success = 1;
-	    break;
-	 elseif m == 0 then
-	    break;
-	 end
-	 local A = 6*(f2-f3)/z3+3*(d2+d3);
-	 local B = 3*(f3-f2)-z3*(d3+2*d2);
-	 z2 = -d2*z3*z3/(B+math.sqrt(B*B-A*d2*z3*z3))
+         while (f2 > f1+z1*rho*d1 or d2 > -sig*d1) and m > 0 do
+            limit = z1
+            if f2 > f1 then
+               z2 = z3 - (0.5*d3*z3*z3)/(d3*z3+f2-f3)
+            else
+               local A = 6*(f2-f3)/z3+3*(d2+d3)
+               local B = 3*(f3-f2)-z3*(d3+2*d2)
+               z2 = (math.sqrt(B*B-A*d2*z3*z3)-B)/A
+            end
+            if z2 ~= z2 or z2 == math.huge or z2 == -math.huge then
+               z2 = z3/2;
+            end
+            z2 = math.max(math.min(z2, int*z3),(1-int)*z3);
+            z1 = z1 + z2;
+            x:add(z2,s)
+            f2,tdf = opfunc(x)
+            df2:copy(tdf)
+            i=i+1
+            m = m - 1
+            d2 = df2:dot(s)
+            z3 = z3-z2;
+         end
+         if f2 > f1+z1*rho*d1 or d2 > -sig*d1 then
+            break
+         elseif d2 > sig*d1 then
+            success = 1;
+            break;
+         elseif m == 0 then
+            break;
+         end
+         local A = 6*(f2-f3)/z3+3*(d2+d3);
+         local B = 3*(f3-f2)-z3*(d3+2*d2);
+         z2 = -d2*z3*z3/(B+math.sqrt(B*B-A*d2*z3*z3))
 
-	 if z2 ~= z2 or z2 == math.huge or z2 == -math.huge or z2 < 0 then
-	    if limit < -0.5 then
-	       z2 = z1 * (ext -1)
-	    else
-	       z2 = (limit-z1)/2
-	    end
-	 elseif (limit > -0.5) and (z2+z1) > limit then
-	    z2 = (limit-z1)/2
-	 elseif limit < -0.5 and (z2+z1) > z1*ext then
-	    z2 = z1*(ext-1)
-	 elseif z2 < -z3*int then
-	    z2 = -z3*int
-	 elseif limit > -0.5 and z2 < (limit-z1)*(1-int) then
-	    z2 = (limit-z1)*(1-int)
-	 end
-	 f3=f2; d3=d2; z3=-z2;
-	 z1 = z1+z2;
-	 x:add(z2,s)
+         if z2 ~= z2 or z2 == math.huge or z2 == -math.huge or z2 < 0 then
+            if limit < -0.5 then
+               z2 = z1 * (ext -1)
+            else
+               z2 = (limit-z1)/2
+            end
+         elseif (limit > -0.5) and (z2+z1) > limit then
+            z2 = (limit-z1)/2
+         elseif limit < -0.5 and (z2+z1) > z1*ext then
+            z2 = z1*(ext-1)
+         elseif z2 < -z3*int then
+            z2 = -z3*int
+         elseif limit > -0.5 and z2 < (limit-z1)*(1-int) then
+            z2 = (limit-z1)*(1-int)
+         end
+         f3=f2; d3=d2; z3=-z2;
+         z1 = z1+z2;
+         x:add(z2,s)
 
-	 f2,tdf = opfunc(x)
-	 df2:copy(tdf)
-	 i=i+1
-	 m = m - 1
-	 d2 = df2:dot(s)
+         f2,tdf = opfunc(x)
+         df2:copy(tdf)
+         i=i+1
+         m = m - 1
+         d2 = df2:dot(s)
       end
       if success == 1 then
-	 f1 = f2
-	 fx[#fx+1] = f1;
-	 local ss = (df2:dot(df2)-df2:dot(df1)) / df1:dot(df1)
-	 s:mul(ss)
-	 s:add(-1,df2)
-	 local tmp = df1:clone()
-	 df1:copy(df2)
-	 df2:copy(tmp)
-	 d2 = df1:dot(s)
-	 if d2> 0 then
-	    s:copy(df1)
-	    s:mul(-1)
-	    d2 = -s:dot(s)
-	 end
+         f1 = f2
+         fx[#fx+1] = f1;
+         local ss = (df2:dot(df2)-df2:dot(df1)) / df1:dot(df1)
+         s:mul(ss)
+         s:add(-1,df2)
+         local tmp = df1:clone()
+         df1:copy(df2)
+         df2:copy(tmp)
+         d2 = df1:dot(s)
+         if d2> 0 then
+            s:copy(df1)
+            s:mul(-1)
+            d2 = -s:dot(s)
+         end
 
-	 z1 = z1 * math.min(ratio, d1/(d2-1e-320))
-	 d1 = d2
-	 ls_failed = 0
+         z1 = z1 * math.min(ratio, d1/(d2-1e-320))
+         d1 = d2
+         ls_failed = 0
       else
-	 x:copy(x0)
-	 f1 = f0
-	 df1:copy(df0)
-	 if ls_failed or i>length then
-	    break
-	 end	 
-	 local tmp = df1:clone()
-	 df1:copy(df2)
-	 df2:copy(tmp)
-	 s:copy(df1)
-	 s:mul(-1)
-	 d1 = -s:dot(s)
-	 z1 = 1/(1-d1)
-	 ls_failed = 1
+         x:copy(x0)
+         f1 = f0
+         df1:copy(df0)
+         if ls_failed or i>length then
+            break
+         end
+         local tmp = df1:clone()
+         df1:copy(df2)
+         df2:copy(tmp)
+         s:copy(df1)
+         s:mul(-1)
+         d1 = -s:dot(s)
+         z1 = 1/(1-d1)
+         ls_failed = 1
       end
    end
    params.df0 = df0

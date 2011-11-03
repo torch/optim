@@ -5,3 +5,4 @@ optim = {}
 
 torch.include('optim', 'sgd.lua')
 torch.include('optim', 'cg.lua')
+torch.include('optim', 'asgd.lua')

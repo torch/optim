@@ -1,6 +1,7 @@
 ----------------------------------------------------------------------
 -- A plain implementation of SGD
 --
+-- ARGS:
 -- opfunc : a function that takes a single input (X), the point of 
 --          evaluation, and returns f(X) and df/dX
 -- x      : the initial point
@@ -11,6 +12,10 @@
 --   state.weightDecay       : weight decay
 --   state.momentum          : momentum
 --   state.learningRates     : vector of individual learning rates
+--
+-- RETURN:
+-- x     : the new x vector
+-- f(x)  : the function, evaluated before the update
 --
 function optim.sgd(opfunc, x, state)
    -- (0) get/update state
