@@ -1,15 +1,17 @@
+----------------------------------------------------------------------
 -- This cg implementation is a rewrite of minimize.m written by Carl
 -- E. Rasmussen. It is supposed to produce exactly same results (give
 -- or take numerical accuracy due to some changed order of
 -- operations).
-
+--
 -- opfunc is a function that takes a single input, the point of evaluation.
 -- x is the initial point
 -- params is a table of parameters and temporary allocations.
 -- params.longth : max number of function evaluations
 -- params.df[0,1,2,3] : if you pass torch.Tensor they will be used for temp storage
 -- params.[s,x0] : if you pass torch.Tensor they will be used for temp storage
-function cg(opfunc, x, params)
+--
+function optim.cg(opfunc, x, params)
 
    -- parameters
    local params = params or {}
@@ -23,7 +25,6 @@ function cg(opfunc, x, params)
    local red = 1
 
    local verbose = params.verbose or 0
-
 
    local i = 0
    local ls_failed = 0
