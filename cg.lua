@@ -178,5 +178,11 @@ function cg(opfunc, x, params)
 	 ls_failed = 1
       end
    end
+   params.df0 = df0
+   params.df1 = df1
+   params.df2 = df2
+   params.df3 = df3
+   params.x0 = x0
+   params.s = s
    return x,fx,i
 end
