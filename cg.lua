@@ -1,7 +1,15 @@
 -- This cg implementation is a rewrite of minimize.m written by Carl
 -- E. Rasmussen. It is supposed to produce exactly same results (give
--- or take numerical accuracy due some changed order of operations).
-function cg(opfunc,x, params)
+-- or take numerical accuracy due to some changed order of
+-- operations).
+
+-- opfunc is a function that takes a single input, the point of evaluation.
+-- x is the initial point
+-- params is a table of parameters and temporary allocations.
+-- params.longth : max number of function evaluations
+-- params.df[0,1,2,3] : if you pass torch.Tensor they will be used for temp storage
+-- params.[s,x0] : if you pass torch.Tensor they will be used for temp storage
+function cg(opfunc, x, params)
 
    -- parameters
    local params = params or {}
@@ -25,19 +33,26 @@ function cg(opfunc,x, params)
    local z1,z2,z3 = 0,0,0
    local d1,d2,d3 = 0,0,0
    local f1,f2,f3 = 0,0,0
-   local df1,df2,df3 = torch.Tensor(),torch.Tensor(),torch.Tensor()
+
+   local df1 = params.df1 or torch.Tensor()
+   local df2 = params.df2 or torch.Tensor()
+   local df3 = params.df3 or torch.Tensor()
    local tdf
+
    df1:resizeAs(x)
    df2:resizeAs(x)
    df3:resizeAs(x)
 
    -- search direction
-   local s = torch.Tensor():resizeAs(x)
+   local s = params.s or torch.Tensor()
+   s:resizeAs(x)
 
    -- we need a temp storage for X
-   local x0 = torch.Tensor():resizeAs(x)
+   local x0 = params.x0 or torch.Tensor()
    local f0 = 0
-   local df0 = torch.Tensor():resizeAs(x)
+   local df0 = params.df0 or torch.Tensor()
+   x0:resizeAs(x)
+   df0:resizeAs(x)
 
 
    -- evaluate at initial point
