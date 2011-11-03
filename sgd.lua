@@ -21,7 +21,6 @@ function optim.sgd(opfunc, x, state)
    local mom = state.momentum or 0
    local lrs = state.learningRates
    state.evalCounter = state.evalCounter or 0
-   state.evalCounter = state.evalCounter + 1
    local nevals = state.evalCounters
 
    -- (1) evaluate f(x) and df/dx
@@ -55,6 +54,9 @@ function optim.sgd(opfunc, x, state)
    else
       x:add(-clr, state.dfdx)
    end
+
+   -- (5) update evaluation counter
+   state.evalCounter = state.evalCounter + 1
 
    -- return f(x_old), and x_new
    return x,fx
