@@ -1,3 +1,6 @@
+-- This cg implementation is a rewrite of minimize.m written by Carl
+-- E. Rasmussen. It is supposed to produce exactly same results (give
+-- or take numerical accuracy due some changed order of operations).
 function cg(opfunc,x, params)
 
    -- parameters
