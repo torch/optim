@@ -32,7 +32,7 @@ function optim.asgd(opfunc, x, state)
    local state = state or {}
    local eta_t = state.eta_t or eta_0
    local lambda = state.lambda or 1
-   local alpha = state.alpha or 1
+   local alpha = state.alpha or 0.75
    local t0 = state.t0 or 1e6
    local lrs = state.learningRates
    state.evalCounter = state.evalCounter or 0
@@ -72,7 +72,7 @@ function optim.asgd(opfunc, x, state)
 
    -- (5) update eta_t and mu_t
    state.t = state.t + 1
-   state.eta_t = state.eta0 / math.pow((1 + state.lambda * state.eta0 * state.t), 0.75)
+   state.eta_t = state.eta0 / math.pow((1 + state.lambda * state.eta0 * state.t), alpha)
    state.mu_t = 1 / math.max(1, state.t - state.t0)
 
    -- return f(x_old), x_new, and averaged x
