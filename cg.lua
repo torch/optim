@@ -2,7 +2,11 @@
 -- This cg implementation is a rewrite of minimize.m written by Carl
 -- E. Rasmussen. It is supposed to produce exactly same results (give
 -- or take numerical accuracy due to some changed order of
--- operations).
+-- operations). You can compare the result on rosenbrock with minimize.m
+-- http://www.gatsby.ucl.ac.uk/~edward/code/minimize/example.html
+-- [x fx c] = minimize([0 0]', 'rosenbrock', -25)
+-- Note that we limit the number of function evaluations only, it seems much more
+-- important in practical use.
 --
 -- ARGS:
 -- opfunc : a function that takes a single input, the point of evaluation.
