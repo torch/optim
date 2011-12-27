@@ -26,5 +26,7 @@ include_directories (${TORCH_INCLUDE_DIR} ${PROJECT_SOURCE_DIR})
 
 install_files(${INSTALL_PREFIX} init.lua)
 install_files(${INSTALL_PREFIX} sgd.lua)
+install_files(${INSTALL_PREFIX} asgd.lua)
 install_files(${INSTALL_PREFIX} cg.lua)
 install_files(${INSTALL_PREFIX} fista.lua)
+install_files(${INSTALL_PREFIX} sparsecoding.lua)
