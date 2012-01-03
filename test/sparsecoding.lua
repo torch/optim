@@ -1,3 +1,4 @@
+require 'kex'
 
 -- L1 FISTA Solution
 -- L1 solution with a linear dictionary ||Ax-b||^2 + \lambda ||x||_1
