@@ -29,4 +29,4 @@ install_files(${INSTALL_PREFIX} sgd.lua)
 install_files(${INSTALL_PREFIX} asgd.lua)
 install_files(${INSTALL_PREFIX} cg.lua)
 install_files(${INSTALL_PREFIX} fista.lua)
-install_files(${INSTALL_PREFIX} sparsecoding.lua)
+

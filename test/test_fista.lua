@@ -2,6 +2,7 @@
 require 'unsup'
 require 'lab'
 require 'plot'
+dofile 'sparsecoding.lua'
 
 -- plot.setgnuplotexe('/usr/bin/gnuplot44')
 -- plot.setgnuplotterminal('x11')
