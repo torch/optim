@@ -81,45 +81,45 @@ function optim.FistaLS(f, g, pl, xinit, params)
       local nline = 0
       local linesearchdone = false
       while not linesearchdone do
-	 -- take a step in gradient direction of smooth function
-	 ply:copy(y)
-	 ply:add(-1/L,gfy)
+         -- take a step in gradient direction of smooth function
+         ply:copy(y)
+         ply:add(-1/L,gfy)
 
-	 -- and solve for minimum of auxiliary problem
-	 pl(ply,L)
-	 -- this is candidate for new current iteration
-	 xk:copy(ply)
+         -- and solve for minimum of auxiliary problem
+         pl(ply,L)
+         -- this is candidate for new current iteration
+         xk:copy(ply)
 
-	 -- evaluate this point F(ply)
-	 fply = f(ply)
-	 
-	 -- ply - y
-	 ply:add(-1, y)
-	 -- <ply-y , \Grad(f(y))>
-	 local Q2 = gfy:dot(ply)
-	 -- L/2 ||beta-y||^2
-	 local Q3 = L/2 * ply:dot(ply)
-	 -- Q(beta,y) = F(y) + <beta-y , \Grad(F(y))> + L/2||beta-y||^2 + G(beta)
-	 Q = fy + Q2 + Q3
+         -- evaluate this point F(ply)
+         fply = f(ply)
+         
+         -- ply - y
+         ply:add(-1, y)
+         -- <ply-y , \Grad(f(y))>
+         local Q2 = gfy:dot(ply)
+         -- L/2 ||beta-y||^2
+         local Q3 = L/2 * ply:dot(ply)
+         -- Q(beta,y) = F(y) + <beta-y , \Grad(F(y))> + L/2||beta-y||^2 + G(beta)
+         Q = fy + Q2 + Q3
 
-	 -- check if F(beta) < Q(pl(y),\t)
-	 if fply <= Q then --and Fply + Gply <= F then
-	    -- now evaluate G here
-	    gply = g(xk)
-	    linesearchdone = true
-	 elseif  nline >= maxline then
-	    linesearchdone = true
-	    xk:copy(xkm) -- if we can't find a better point, current iter = previous iter
-	    fply = f(xk)
-	    gply = g(xk)
-	    --print('oops')
-	 else
-	    L = L * Lstep
-	 end
-	 nline = nline + 1
-	 if verbose then
-	    print(niter,linesearchdone,nline,L,fy,Q2,Q3,Q,fply)
-	 end
+         -- check if F(beta) < Q(pl(y),\t)
+         if fply <= Q then --and Fply + Gply <= F then
+            -- now evaluate G here
+            gply = g(xk)
+            linesearchdone = true
+         elseif  nline >= maxline then
+            linesearchdone = true
+            xk:copy(xkm) -- if we can't find a better point, current iter = previous iter
+            fply = f(xk)
+            gply = g(xk)
+            --print('oops')
+         else
+            L = L * Lstep
+         end
+         nline = nline + 1
+         if verbose then
+            print(niter,linesearchdone,nline,L,fy,Q2,Q3,Q,fply)
+         end
       end
       -- end line search
       ---------------------------------------------
@@ -136,18 +136,18 @@ function optim.FistaLS(f, g, pl, xinit, params)
       history[niter].Q  = Q
       params.L = L
       if verbose then
-	 history[niter].xk = xk:clone()
-	 history[niter].y  = y:clone()
+         history[niter].xk = xk:clone()
+         history[niter].y  = y:clone()
       end
 
       -- are we done?
       if niter > 1 and math.abs(history[niter].F - history[niter-1].F) <= errthres then
-	 converged = true
-	 return xk,history
+         converged = true
+         return xk,history
       end
 
       if niter >= maxiter then
-	 return xk,history
+         return xk,history
       end
 
       --if niter > 1 and history[niter].F > history[niter-1].F then
@@ -157,18 +157,18 @@ function optim.FistaLS(f, g, pl, xinit, params)
       --end
 
       if doFistaUpdate then
-	 -- do the FISTA step
-	 tkp = (1 + math.sqrt(1 + 4*tk*tk)) / 2
-	 -- x(k-1) = x(k-1) - x(k)
-	 xkm:add(-1,xk)
-	 -- y(k+1) = x(k) + (1-t(k)/t(k+1))*(x(k-1)-x(k))
-	 y:copy(xk)
-	 y:add( (1-tk)/tkp , xkm)
-	 -- store for next iterations
-	 -- x(k-1) = x(k)
- 	 xkm:copy(xk)
+         -- do the FISTA step
+         tkp = (1 + math.sqrt(1 + 4*tk*tk)) / 2
+         -- x(k-1) = x(k-1) - x(k)
+         xkm:add(-1,xk)
+         -- y(k+1) = x(k) + (1-t(k)/t(k+1))*(x(k-1)-x(k))
+         y:copy(xk)
+         y:add( (1-tk)/tkp , xkm)
+         -- store for next iterations
+         -- x(k-1) = x(k)
+         xkm:copy(xk)
       else
-	 y:copy(xk)
+         y:copy(xk)
       end
       -- t(k) = t(k+1)
       tk = tkp
