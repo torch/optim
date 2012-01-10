@@ -1,11 +1,11 @@
 
 require 'unsup'
 require 'lab'
-require 'plot'
+require 'gnuplot'
 dofile 'sparsecoding.lua'
 
--- plot.setgnuplotexe('/usr/bin/gnuplot44')
--- plot.setgnuplotterminal('x11')
+-- gnuplot.setgnuplotexe('/usr/bin/gnuplot44')
+-- gnuplot.setgnuplotterminal('x11')
 
 function gettableval(tt,v)
    local x = torch.Tensor(#tt)
@@ -22,8 +22,8 @@ function doplots(v)
    local hista = istaf:readObject()
    istaf:close()
 
-   plot.figure()
-   plot.plot({'fista ' .. v,gettableval(hfista,v)},{'ista ' .. v, gettableval(hista,v)})
+   gnuplot.figure()
+   gnuplot.plot({'fista ' .. v,gettableval(hfista,v)},{'ista ' .. v, gettableval(hista,v)})
 end
 
 seed = seed or 123
@@ -73,13 +73,13 @@ code,h = fista.run(x,0.1)
 rec = fista.reconstruction
 --code,rec,h = fista:forward(x);
 
-plot.figure(1)
-plot.plot({'data',mixi,mixj,'+'},{'code',lab.linspace(1,no,no),code,'+'})
-plot.title('Fista = ' .. tostring(fistaparams.doFistaUpdate))
+gnuplot.figure(1)
+gnuplot.plot({'data',mixi,mixj,'+'},{'code',lab.linspace(1,no,no),code,'+'})
+gnuplot.title('Fista = ' .. tostring(fistaparams.doFistaUpdate))
 
-plot.figure(2)
-plot.plot({'input',lab.linspace(1,ni,ni),x,'+-'},{'reconstruction',lab.linspace(1,ni,ni),rec,'+-'});
-plot.title('Reconstruction Error : ' ..  x:dist(rec) .. ' ' .. 'Fista = ' .. tostring(fistaparams.doFistaUpdate))
+gnuplot.figure(2)
+gnuplot.plot({'input',lab.linspace(1,ni,ni),x,'+-'},{'reconstruction',lab.linspace(1,ni,ni),rec,'+-'});
+gnuplot.title('Reconstruction Error : ' ..  x:dist(rec) .. ' ' .. 'Fista = ' .. tostring(fistaparams.doFistaUpdate))
 --w2:axis(0,ni+1,-1,1)
 
 if dofista then
