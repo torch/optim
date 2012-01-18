@@ -43,7 +43,7 @@ function optim.sgd(opfunc, x, state)
 
    -- (2) weight decay
    if wd ~= 0 then
-      x:add(-wd, x)
+      x:add(-wd*lr, x)
    end
 
    -- (3) learning rate decay (annealing)
