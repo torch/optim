@@ -6,7 +6,7 @@ dofile('l2.lua')
 
 
 x = torch.Tensor(2):fill(0)
-x,fx,i=optim.cg(rosenbrock,x)
+x,fx,i=optim.cg(rosenbrock,x,{length=500})
 
 print()
 print('Rosenbrock test: compare with http://www.gatsby.ucl.ac.uk/~edward/code/minimize/example.html')

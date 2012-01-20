@@ -12,7 +12,7 @@
 -- opfunc : a function that takes a single input, the point of evaluation.
 -- x      : the initial point
 -- params : a table of parameters and temporary allocations.
---   params.longth      : max number of function evaluations
+--   params.length      : max number of function evaluations
 --   params.df[0,1,2,3] : if you pass torch.Tensor they will be used for temp storage
 --   params.[s,x0]      : if you pass torch.Tensor they will be used for temp storage
 --
