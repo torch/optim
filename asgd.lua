@@ -64,6 +64,6 @@ function optim.asgd(opfunc, x, state)
    state.eta_t = state.eta0 / math.pow((1 + state.lambda * state.eta0 * state.t), state.alpha)
    state.mu_t = 1 / math.max(1, state.t - state.t0)
 
-   -- return f(x_old), x_new, and averaged x
-   return x,fx,state.ax
+   -- return x*, f(x) before optimization, and average(x_t0,x_t1,x_t2,...)
+   return x,{fx},state.ax
 end

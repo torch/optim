@@ -1,9 +1,16 @@
 ----------------------------------------------------------------------
 -- An implementation of L-BFGS, heavily inspired from minFunc.
 --
--- For now, we only implement one type of line search:
--- Bracketing w/ Cubic Interpolation/Extrapolation 
--- with function + gradient values (Wolfe Criterion)
+-- This implementation of L-BFGS relies on a user-provided line
+-- search function (state.lineSearch). If this function is not
+-- provided, then a simple learningRate is used to produce fixed
+-- size steps. Fixed size steps are much less costly than line
+-- searches, and can be useful for stochastic problems.
+--
+-- The learning rate is used even when a line search is provided.
+-- This is also useful for large-scale stochastic problems, where
+-- opfunc is a noisy approximation of f(x). In that case, the learning
+-- rate allows a reduction of confidence in the step size.
 --
 -- ARGS:
 -- opfunc : a function that takes a single input (X), the point of 
@@ -11,20 +18,26 @@
 -- x      : the initial point
 -- state  : a table describing the state of the optimizer; after each
 --          call the state is modified
---   state.maxIter     :  Maximum number of iterations allowed
---   state.maxEval     :  Maximum number of function evaluations
---   state.tolFun      :  Termination tolerance on the first-order optimality
---   state.tolX        :  Termination tol on progress in terms of func/param changes
+--   state.maxIter      :  Maximum number of iterations allowed
+--   state.maxEval      :  Maximum number of function evaluations
+--   state.tolFun       :  Termination tolerance on the first-order optimality
+--   state.tolX         :  Termination tol on progress in terms of func/param changes
+--   state.lineSearch   :  A line search function
+--   state.learningRate : If no line search provided, then a fixed step size is used
 --
 -- RETURN:
--- x     : the new x vector
--- f(x)  : the function value, at the optimal point
+-- x* : the new x vector, at the optimal point
+-- f  : a table of all function values: 
+--      f[1] is the value of the function before any optimization
+--      f[#f] is the final fully optimized value, at x*
+--
+-- (Clement Farabet, 2012)
 --
 function optim.lbfgs(opfunc, x, state)
    -- get/update state
    local state = state or {}
    local maxIter = tonumber(state.maxIter) or 20
-   local maxEval = tonumber(state.maxEval) or 40
+   local maxEval = tonumber(state.maxEval) or maxIter*1.25
    local tolFun = state.tolFun or 1e-5
    local tolX = state.tolX or 1e-9
    local nCorrection = state.nCorrection or 100
@@ -47,9 +60,6 @@ function optim.lbfgs(opfunc, x, state)
    local abs = math.abs
    local min = math.min
 
-   -- initial step length
-   local t = 1
-
    -- evaluate initial f(x) and df/dx
    local f,g = opfunc(x)
    local f_hist = {f}
@@ -57,7 +67,7 @@ function optim.lbfgs(opfunc, x, state)
    state.funcEval = state.funcEval + 1
 
    -- check optimality of initial point
-   if g:abs():sum() <= tolFun then
+   if g:clone():abs():sum() <= tolFun then
       -- optimality condition below tolFun
       verbose('optimality condition below tolFun')
       return x,f
@@ -65,7 +75,7 @@ function optim.lbfgs(opfunc, x, state)
 
    -- optimize for a max of maxIter iterations
    local nIter = 0
-   local d,old_dirs,old_stps,Hdiag,g_old,f_old
+   local d,old_dirs,old_stps,Hdiag,g_old,f_old,t
    while nIter < maxIter do
       -- keep track of nb of iterations
       nIter = nIter + 1
@@ -75,8 +85,8 @@ function optim.lbfgs(opfunc, x, state)
       ------------------------------------------------------------
       if nIter == 1 then
          d = -g
-         old_dirs = {zeros(g:size())}
-         old_stps = {zeros(d:size())}
+         old_dirs = {}
+         old_stps = {}
          Hdiag = 1
       else
          -- do lbfgs update (update memory)
@@ -154,7 +164,7 @@ function optim.lbfgs(opfunc, x, state)
 
       -- reset initial guess for step size
       if nIter == 1 then
-         t = min(1,1/g:abs():sum())
+         t = min(1,1/g:clone():abs():sum()) * learningRate
       else
          t = learningRate
       end
@@ -162,16 +172,14 @@ function optim.lbfgs(opfunc, x, state)
       -- optional line search: user function
       local lsFuncEval = 0
       if lineSearch and type(lineSearch) == 'function' then
-         -- perform line search, satisfying Wolfe condition
+         -- perform line search, using user function
          f,g,x,t,lsFuncEval = lineSearch(opfunc,x,t,d,f,g,gtd,c1,c2,tolX)
          append(f_hist, f)
-
-         -- from minFunc:
-         --[t,f,g,lsFuncEval] = WolfeLineSearch(x,t,d,f,g,gtd,c1,c2,LS=4,25,tolX,false,false,1,opfunc)
       else
-         -- no line search, simply re-evaluate (costly & stupid but needed by check below)
-         x:add(d*t)
+         -- no line search, simply move with fixed-step and re-evaluate f(x)
+         x:add(t,d)
          f,g = opfunc(x)
+         lsFuncEval = 1
          append(f_hist, f)
       end
 
@@ -182,7 +190,7 @@ function optim.lbfgs(opfunc, x, state)
       ------------------------------------------------------------
       -- check conditions
       ------------------------------------------------------------
-      if g:abs():sum() <= tolFun then
+      if g:clone():abs():sum() <= tolFun then
          -- check optimality
          verbose('optimality condition below tolFun')
          break
@@ -208,5 +216,5 @@ function optim.lbfgs(opfunc, x, state)
    end
 
    -- return optimal x, and history of f(x)
-   return x,f_hist
+   return x,f_hist,currentFuncEval
 end

@@ -63,6 +63,6 @@ function optim.sgd(opfunc, x, state)
    -- (5) update evaluation counter
    state.evalCounter = state.evalCounter + 1
 
-   -- return f(x_old), and x_new
-   return x,fx
+   -- return x*, f(x) before optimization
+   return x,{fx}
 end
