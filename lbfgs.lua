@@ -45,6 +45,7 @@ function optim.lbfgs(opfunc, x, state)
    local randn = lab.randn
    local append = table.insert
    local abs = math.abs
+   local min = math.min
 
    -- initial step length
    local t = 1
@@ -64,7 +65,7 @@ function optim.lbfgs(opfunc, x, state)
 
    -- optimize for a max of maxIter iterations
    local nIter = 0
-   local d,old_dirs,old_stps,Hdiag,g_old
+   local d,old_dirs,old_stps,Hdiag,g_old,f_old
    while nIter < maxIter do
       -- keep track of nb of iterations
       nIter = nIter + 1
@@ -109,7 +110,7 @@ function optim.lbfgs(opfunc, x, state)
          local p = g:size(1)
          local k = #old_dirs
 
-         local ro = {}
+         local ro = zeros(k)
          for i = 1,k do
             ro[i] = 1 / (old_stps[i] * old_dirs[i])
          end
@@ -152,7 +153,11 @@ function optim.lbfgs(opfunc, x, state)
       end
 
       -- reset initial guess for step size
-      t = learningRate
+      if nIter == 1 then
+         t = min(1,1/g:abs():sum())
+      else
+         t = learningRate
+      end
 
       -- optional line search: user function
       local lsFuncEval = 0
@@ -177,6 +182,12 @@ function optim.lbfgs(opfunc, x, state)
       ------------------------------------------------------------
       -- check conditions
       ------------------------------------------------------------
+      if g:abs():sum() <= tolFun then
+         -- check optimality
+         verbose('optimality condition below tolFun')
+         break
+      end
+
       if (d*t):abs():sum() <= tolX then
          -- step size below tolX
          verbose('step size below tolX')
