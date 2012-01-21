@@ -12,9 +12,18 @@
 -- opfunc : a function that takes a single input, the point of evaluation.
 -- x      : the initial point
 -- params : a table of parameters and temporary allocations.
---   params.longth      : max number of function evaluations
+--   params.maxEval     : max number of function evaluations
+--   params.maxIter     : max number of iterations
 --   params.df[0,1,2,3] : if you pass torch.Tensor they will be used for temp storage
 --   params.[s,x0]      : if you pass torch.Tensor they will be used for temp storage
+--
+-- RETURN:
+-- x* : the new x vector, at the optimal point
+-- f  : a table of all function values: 
+--      f[1] is the value of the function before any optimization
+--      f[#f] is the final fully optimized value, at x*
+--
+-- (Koray Kavukcuoglu, 2012)
 --
 function optim.cg(opfunc, x, params)
    -- parameters
@@ -23,9 +32,9 @@ function optim.cg(opfunc, x, params)
    local sig  = params.sig or 0.5
    local int  = params.int or 0.1
    local ext  = params.ext or 3.0
-   local max  = params.max or 20
+   local maxIter  = params.maxIter or 20
    local ratio = params.ratio or 100
-   local length = params.length or 25
+   local maxEval = params.maxEval or maxIter*1.25
    local red = 1
 
    local verbose = params.verbose or 0
@@ -61,6 +70,7 @@ function optim.cg(opfunc, x, params)
 
    -- evaluate at initial point
    f1,tdf = opfunc(x)
+   fx[#fx+1] = f1
    df1:copy(tdf)
    i=i+1
 
@@ -70,7 +80,7 @@ function optim.cg(opfunc, x, params)
    d1 = -s:dot(s )         -- slope
    z1 = red/(1-d1)         -- initial step
 
-   while i < math.abs(length) do
+   while i < math.abs(maxEval) do
 
       x0:copy(x)
       f0 = f1
@@ -82,7 +92,7 @@ function optim.cg(opfunc, x, params)
       i=i+1
       d2 = df2:dot(s)
       f3,d3,z3 = f1,d1,-z1   -- init point 3 equal to point 1
-      local m = math.min(max,length-i)
+      local m = math.min(maxIter,maxEval-i)
       local success = 0
       local limit = -1
 
@@ -169,7 +179,7 @@ function optim.cg(opfunc, x, params)
          x:copy(x0)
          f1 = f0
          df1:copy(df0)
-         if ls_failed or i>length then
+         if ls_failed or i>maxEval then
             break
          end
          local tmp = df1:clone()
