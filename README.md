@@ -18,9 +18,9 @@ Each optimization algorithm is based on the same interface:
 x*, {f}, ... = optim.method(func, x, state)
 
 with:
-func  : a user-defined closure that respects this API: f,df/dx = func(x)
-x     : the current parameter vector (a 1d torch tensor)
-state : a table of parameters, and state variables, dependent upon the algorithm
-x*    : the new parameter vector that minimizes f, x* = argmin_x f(x)
-{f}   : a table of all f values, in the order they've been evaluated
-        (for some simple algorithms, like SGD, #f == 1)
+* func  : a user-defined closure that respects this API: f,df/dx = func(x)
+* x     : the current parameter vector (a 1d torch tensor)
+* state : a table of parameters, and state variables, dependent upon the algorithm
+* x*    : the new parameter vector that minimizes f, x* = argmin_x f(x)
+* {f}   : a table of all f values, in the order they've been evaluated
+          (for some simple algorithms, like SGD, #f == 1)
