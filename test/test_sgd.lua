@@ -7,7 +7,7 @@ dofile 'l2.lua'
 x = torch.Tensor(2):fill(0)
 fx = {}
 
-config = {eta0=1e-3, t0=1000}
+config = {learningRate=1e-3}
 for i = 1,10001 do
 	x,f=optim.sgd(rosenbrock,x,config)
 	if (i-1)%1000 == 0 then

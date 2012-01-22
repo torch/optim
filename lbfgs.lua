@@ -45,12 +45,14 @@ function optim.lbfgs(opfunc, x, state)
    local c1 = state.lineSearchDecrease or 1e-4
    local c2 = state.lineSearchCurvature or 0.9
    local learningRate = state.learningRate or 1
-   local verbose = state.verbose or false
+   local isverbose = state.verbose or false
+   
    state.funcEval = state.funcEval or 0
+   state.nIter = state.nIter or 0
 
    -- verbose function
    local function verbose(...)
-      if verbose then print('<optim.lbfgs> ', ...) end
+      if isverbose then print('<optim.lbfgs> ', ...) end
    end
 
    -- import some functions
@@ -67,23 +69,34 @@ function optim.lbfgs(opfunc, x, state)
    state.funcEval = state.funcEval + 1
 
    -- check optimality of initial point
-   if g:clone():abs():sum() <= tolFun then
+   state.tmp1 = state.abs_g or zeros(g:size()); local tmp1 = state.tmp1
+   tmp1:copy(g):abs()
+   if tmp1:sum() <= tolFun then
       -- optimality condition below tolFun
       verbose('optimality condition below tolFun')
       return x,f
    end
 
+   -- variables cached in state (for tracing)
+   local d = state.d
+   local t = state.t
+   local old_dirs = state.old_dirs
+   local old_stps = state.old_stps
+   local Hdiag = state.Hdiag
+   local g_old = state.g_old
+   local f_old = state.f_old
+
    -- optimize for a max of maxIter iterations
    local nIter = 0
-   local d,old_dirs,old_stps,Hdiag,g_old,f_old,t
    while nIter < maxIter do
       -- keep track of nb of iterations
       nIter = nIter + 1
+      state.nIter = state.nIter + 1
 
       ------------------------------------------------------------
       -- computer gradient descent direction
       ------------------------------------------------------------
-      if nIter == 1 then
+      if state.nIter == 1 then
          d = -g
          old_dirs = {}
          old_stps = {}
@@ -106,13 +119,16 @@ function optim.lbfgs(opfunc, x, state)
                   append(old_stps, prev_old_stps[i])
                end
             end
-            
+
             -- store new direction/step
             append(old_dirs, s)
             append(old_stps, y)
 
             -- update scale of initial Hessian approximation
             Hdiag = ys/(y*y)
+
+            -- cleanup
+            collectgarbage()
          end
 
          -- compute the approximate (L-BFGS) inverse Hessian 
@@ -120,21 +136,22 @@ function optim.lbfgs(opfunc, x, state)
          local p = g:size(1)
          local k = #old_dirs
 
-         local ro = zeros(k)
+         state.ro = state.ro or zeros(nCorrection); local ro = state.ro
          for i = 1,k do
             ro[i] = 1 / (old_stps[i] * old_dirs[i])
          end
 
-         local q = zeros(k+1,p)
-         local r = zeros(k+1,p)
-         local al = zeros(k)
-         local be = zeros(k)
+         state.q = state.q or zeros(nCorrection+1,p); local q = state.q
+         state.r = state.r or zeros(nCorrection+1,p); local r = state.r
+         state.al = state.al or zeros(nCorrection); local al = state.al
+         state.be = state.be or zeros(nCorrection); local be = state.be
 
          q[k+1] = -g
 
          for i = k,1,-1 do
             al[i] = old_dirs[i] * q[i+1] * ro[i]
-            q[i] = q[i+1] - old_stps[i] * al[i]
+            q[i] = q[i+1]
+            q[i]:add(-al[i], old_stps[i])
          end
 
          -- multiply by initial Hessian
@@ -142,11 +159,12 @@ function optim.lbfgs(opfunc, x, state)
 
          for i = 1,k do
             be[i] = old_stps[i] * r[i] * ro[i]
-            r[i+1] = r[i] + old_dirs[i] * (al[i] - be[i])
+            r[i+1] = r[i]
+            r[i+1]:add((al[i] - be[i]), old_dirs[i])
          end
 
          -- final direction:
-         d = r[k+1]
+         d:copy(r[k+1])
       end
       g_old = g:clone()
       f_old = f
@@ -163,8 +181,9 @@ function optim.lbfgs(opfunc, x, state)
       end
 
       -- reset initial guess for step size
-      if nIter == 1 then
-         t = min(1,1/g:clone():abs():sum()) * learningRate
+      if state.nIter == 1 then
+         tmp1:copy(g):abs()
+         t = min(1,1/tmp1:sum()) * learningRate
       else
          t = learningRate
       end
@@ -190,13 +209,15 @@ function optim.lbfgs(opfunc, x, state)
       ------------------------------------------------------------
       -- check conditions
       ------------------------------------------------------------
-      if g:clone():abs():sum() <= tolFun then
+      tmp1:copy(g):abs()
+      if tmp1:sum() <= tolFun then
          -- check optimality
          verbose('optimality condition below tolFun')
          break
       end
 
-      if (d*t):abs():sum() <= tolX then
+      tmp1:copy(d):mul(t):abs()
+      if tmp1:sum() <= tolX then
          -- step size below tolX
          verbose('step size below tolX')
          break
@@ -214,6 +235,15 @@ function optim.lbfgs(opfunc, x, state)
          break
       end
    end
+
+   -- save state
+   state.old_dirs = old_dirs
+   state.old_stps = old_stps
+   state.Hdiag = Hdiag
+   state.g_old = g_old
+   state.f_old = f_old
+   state.t = t
+   state.d = d
 
    -- return optimal x, and history of f(x)
    return x,f_hist,currentFuncEval
