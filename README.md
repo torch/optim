@@ -15,9 +15,11 @@
 This package contains several optimization routines for Torch7.
 
 Each optimization algorithm is based on the same interface:
+
 x*, {f}, ... = optim.method(func, x, state)
 
 with:
+
 * func  : a user-defined closure that respects this API: f,df/dx = func(x)
 * x     : the current parameter vector (a 1d torch tensor)
 * state : a table of parameters, and state variables, dependent upon the algorithm
