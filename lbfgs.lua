@@ -195,11 +195,16 @@ function optim.lbfgs(opfunc, x, state)
          f,g,x,t,lsFuncEval = lineSearch(opfunc,x,t,d,f,g,gtd,c1,c2,tolX)
          append(f_hist, f)
       else
-         -- no line search, simply move with fixed-step and re-evaluate f(x)
+         -- no line search, simply move with fixed-step
          x:add(t,d)
-         f,g = opfunc(x)
-         lsFuncEval = 1
-         append(f_hist, f)
+         if nIter ~= maxIter then
+            -- re-evaluate function only if not in last iteration
+            -- the reason we do this: in a stochastic setting,
+            -- no use to re-evaluate that function here
+            f,g = opfunc(x)
+            lsFuncEval = 1
+            append(f_hist, f)
+         end
       end
 
       -- update func eval
@@ -209,6 +214,18 @@ function optim.lbfgs(opfunc, x, state)
       ------------------------------------------------------------
       -- check conditions
       ------------------------------------------------------------
+      if nIter == maxIter then
+         -- no use to run tests
+         verbose('reached max number of iterations')
+         break
+      end
+
+      if currentFuncEval >= maxEval then
+         -- max nb of function evals
+         verbose('max nb of function evals')
+         break
+      end
+
       tmp1:copy(g):abs()
       if tmp1:sum() <= tolFun then
          -- check optimality
@@ -226,12 +243,6 @@ function optim.lbfgs(opfunc, x, state)
       if abs(f-f_old) < tolX then
          -- function value changing less than tolX
          verbose('function value changing less than tolX')
-         break
-      end
-
-      if currentFuncEval >= maxEval then
-         -- max nb of function evals
-         verbose('max nb of function evals')
          break
       end
    end
