@@ -56,8 +56,8 @@ function optim.lbfgs(opfunc, x, state)
    end
 
    -- import some functions
-   local zeros = lab.zeros
-   local randn = lab.randn
+   local zeros = torch.zeros
+   local randn = torch.randn
    local append = table.insert
    local abs = math.abs
    local min = math.min

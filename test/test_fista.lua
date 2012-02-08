@@ -1,6 +1,6 @@
 
 require 'unsup'
-require 'lab'
+require 'torch'
 require 'gnuplot'
 dofile 'sparsecoding.lua'
 
@@ -33,7 +33,7 @@ else
    dofista = not dofista
 end
 
-random.manualSeed(seed)
+torch.manualSeed(seed)
 math.randomseed(seed)
 nc = 3
 ni = 30
@@ -50,7 +50,7 @@ fistaparams.maxline = 10
 fistaparams.maxiter = 200
 fistaparams.verbose = true
 
-D=lab.randn(ni,no)
+D=torch.randn(ni,no)
 for i=1,D:size(2) do
    D:select(2,i):div(D:select(2,i):std()+1e-12)
 end
@@ -59,7 +59,7 @@ mixi = torch.Tensor(nc)
 mixj = torch.Tensor(nc)
 for i=1,nc do
    local ii = math.random(1,no)
-   local cc = random.uniform(0,1/nc)
+   local cc = torch.uniform(0,1/nc)
    mixi[i] = ii;
    mixj[i] = cc;
    print(ii,cc)
@@ -74,11 +74,11 @@ rec = fista.reconstruction
 --code,rec,h = fista:forward(x);
 
 gnuplot.figure(1)
-gnuplot.plot({'data',mixi,mixj,'+'},{'code',lab.linspace(1,no,no),code,'+'})
+gnuplot.plot({'data',mixi,mixj,'+'},{'code',torch.linspace(1,no,no),code,'+'})
 gnuplot.title('Fista = ' .. tostring(fistaparams.doFistaUpdate))
 
 gnuplot.figure(2)
-gnuplot.plot({'input',lab.linspace(1,ni,ni),x,'+-'},{'reconstruction',lab.linspace(1,ni,ni),rec,'+-'});
+gnuplot.plot({'input',torch.linspace(1,ni,ni),x,'+-'},{'reconstruction',torch.linspace(1,ni,ni),rec,'+-'});
 gnuplot.title('Reconstruction Error : ' ..  x:dist(rec) .. ' ' .. 'Fista = ' .. tostring(fistaparams.doFistaUpdate))
 --w2:axis(0,ni+1,-1,1)
 

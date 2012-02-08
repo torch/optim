@@ -1,6 +1,6 @@
-require 'lab'
+require 'torch'
 require 'optim'
-require 'plot'
+
 dofile('rosenbrock.lua')
 dofile('l2.lua')
 
