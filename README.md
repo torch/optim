@@ -2,7 +2,7 @@
 
 ## Requirements
 
-* Torch7 (github.com/andresy/torch)
+* Torch7 (www.torch.ch)
 
 ## Installation
 
