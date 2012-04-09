@@ -166,11 +166,13 @@ function optim.FistaLS(f, g, pl, xinit, params)
       -- are we done?
       if niter > 1 and math.abs(history[niter].F - history[niter-1].F) <= errthres then
          converged = true
-         return xk,history
+	 xinit:copy(y)
+         return y,history
       end
 
       if niter >= maxiter then
-         return xk,history
+	 xinit:copy(y)
+         return y,history
       end
 
       --if niter > 1 and history[niter].F > history[niter-1].F then
