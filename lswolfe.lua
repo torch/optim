@@ -130,8 +130,8 @@ function optim.lswolfe(opfunc,x,t,d,f,g,gtd,options)
 
       -- test what we are making sufficient progress
       if min(bracket:max()-t,t-bracket:min())/(bracket:max()-bracket:min()) < 0.1 then
-         if insufProgress or t>=max(bracket) or t <= min(bracket) then
-            if abs(t-max(bracket)) < abs(t-bracket:min()) then
+         if insufProgress or t>=bracket:max() or t <= bracket:min() then
+            if abs(t-bracket:max()) < abs(t-bracket:min()) then
                t = bracket:max()-0.1*(bracket:max()-bracket:min())
             else
                t = bracket:min()+0.1*(bracket:max()-bracket:min())
@@ -160,7 +160,7 @@ function optim.lswolfe(opfunc,x,t,d,f,g,gtd,options)
          if abs(gtd_new) <= - c2*gtd then
             -- Wolfe conditions satisfied
             done = true
-         elseif gtd_new*(bracket(HIpos)-bracket(LOpos)) >= 0 then
+         elseif gtd_new*(bracket[HIpos]-bracket[LOpos]) >= 0 then
             -- Old HI becomes new LO
             bracket[HIpos] = bracket[LOpos]
             bracketFval[HIpos] = bracketFval[LOpos]
