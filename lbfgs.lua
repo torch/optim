@@ -1,5 +1,5 @@
 ----------------------------------------------------------------------
--- An implementation of L-BFGS, heavily inspired from minFunc.
+-- An implementation of L-BFGS, heavily inspired by minFunc (Mark Schmidt)
 --
 -- This implementation of L-BFGS relies on a user-provided line
 -- search function (state.lineSearch). If this function is not
@@ -42,8 +42,7 @@ function optim.lbfgs(opfunc, x, state)
    local tolX = state.tolX or 1e-9
    local nCorrection = state.nCorrection or 100
    local lineSearch = state.lineSearch
-   local c1 = state.lineSearchDecrease or 1e-4
-   local c2 = state.lineSearchCurvature or 0.9
+   local lineSearchOpts = state.lineSearchOptions
    local learningRate = state.learningRate or 1
    local isverbose = state.verbose or false
    
@@ -192,7 +191,7 @@ function optim.lbfgs(opfunc, x, state)
       local lsFuncEval = 0
       if lineSearch and type(lineSearch) == 'function' then
          -- perform line search, using user function
-         f,g,x,t,lsFuncEval = lineSearch(opfunc,x,t,d,f,g,gtd,c1,c2,tolX)
+         f,g,x,t,lsFuncEval = lineSearch(opfunc,x,t,d,f,g,gtd,lineSearchOpts)
          append(f_hist, f)
       else
          -- no line search, simply move with fixed-step
