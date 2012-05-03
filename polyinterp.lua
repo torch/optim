@@ -1,3 +1,41 @@
+local function isreal(x)
+   return x == x
+end
+
+local function isnan(x)
+   return not x == x
+end
+
+local function roots(c)
+   local n = c:size(1)-1
+   local A = torch.diag(torch.ones(n-1),-1)
+   A[1] = -c[{ {2,n+1} }]/c[1];
+   local e = torch.reig(A,'N')
+   return e
+end
+
+local function real(x)
+   if type(x) == number then return x end
+   return x[{ {} , 1}]
+end
+
+local function imag(x)
+   if type(x) == 'number' then return 0 end
+   if x:nDimension() == 1 then
+      return torch.zeros(x:size(1))
+   else
+      return x[{ {},  2}]
+   end
+end
+
+local function polyval(p,x)
+   if type(x) == 'number' then x=torch.Tensor{x} end
+   local val = x.new(x:size(1))
+   local pwr = p:size(1)
+   p:apply(function(pc) pwr = pwr-1; val:add(pc,torch.pow(x,pwr)); return pc end)
+   return val
+end
+
 ----------------------------------------------------------------------
 -- Minimum of interpolating polynomial based on function and 
 -- derivative values
@@ -44,16 +82,16 @@ function optim.polyinterp(points,xminBound,xmaxBound)
                      / (points[{minPos,1}]-points[{notMinPos,1}]);
       local d2 = sqrt(d1^2 - points[{minPos,3}]*points[{notMinPos,3}]);
 
-      if d2 == d2 then -- isreal()
+      if isreal(d2) then -- isreal()
          local t = points[{notMinPos,1}] - (points[{notMinPos,1}]
                    - points[{minPos,1}]) * ((points[{notMinPos,3}] + d2 - d1)
                      / (points[{notMinPos,3}] - points[{minPos,3}] + 2*d2))
          
          minPos = min(max(t,points[{minPos,1}]),points[{notMinPos,1}])
       else
+         -- this seems different (?)
          minPos = mean(points[{{},1}])
       end
-
       return minPos
    end
 
@@ -70,7 +108,7 @@ function optim.polyinterp(points,xminBound,xmaxBound)
    local A = zeros(nPoints*2,order+1)
    local b = zeros(nPoints*2,1)
    for i = 1,nPoints do
-      local constraint = zeros(1,order+1)
+      local constraint = zeros(order+1)
       for j = order,0,-1 do
          constraint[order-j+1] = points[{i,1}]^j
       end
@@ -80,7 +118,7 @@ function optim.polyinterp(points,xminBound,xmaxBound)
 
    -- Add constraints based on derivatives
    for i = 1,nPoints do
-      local constraint = zeros(1,order+1)
+      local constraint = zeros(order+1)
       for j = 1,order do
          constraint[j] = (order-j+1)*points[{i,1}]^(order-j)
       end
@@ -90,27 +128,31 @@ function optim.polyinterp(points,xminBound,xmaxBound)
 
    -- Find interpolating polynomial
    local res = torch.gels(b,A)
-   local params = res[{ {1,nPoints*2} }]
+   local params = res[{ {1,nPoints*2} }]:squeeze()
 
    -- Compute Critical Points
-   local dParams = zeros(order,1);
+   local dParams = zeros(order);
    for i = 1,params:size(1)-1 do
       dParams[i] = params[i]*(order-i+1)
    end
 
    -- nan/inf?
    local nans = false
-   for i = 1,dParams:size(1) do
-      if dParams[i] ~= dParams[i] or dParams[i] == math.huge then
-         nans = true
-         break
-      end
+   if torch.ne(dParams,dParams):max() > 0 or torch.eq(dParams,math.huge):max() > 0 then
+      nans = true
    end
-   local cp
-   if nans then
-      cp = Tensor{xminBound,xmaxBound,points[{{},1}]}
-   else
-      cp = Tensor{xminBound,xmaxBound,points[{{},1}],roots(dParams)}
+   -- for i = 1,dParams:size(1) do
+   --    if dParams[i] ~= dParams[i] or dParams[i] == math.huge then
+   --       nans = true
+   --       break
+   --    end
+   -- end
+   local cp = torch.cat(Tensor{xminBound,xmaxBound},points[{{},1}])
+   if not nans
+      local cproots = roots(dParams)
+      local cpi = zeros(cp:size(1),2)
+      cpi[{ {1,cp:size(1)} , 1 }] = cp
+      cp = torch.cat(cpi,cproots)
    end
 
    -- Test Critical Points
