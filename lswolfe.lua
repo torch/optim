@@ -94,7 +94,7 @@ function optim.lswolfe(opfunc,x,t,d,f,g,gtd,options)
 
       -- next step:
       f_prev = f_new
-      g_prev = g_new
+      g_prev = g_new:clone()
       gtd_prev = gtd_new
       x[{}] = x_init
       x:add(t,d)
@@ -183,15 +183,13 @@ function optim.lswolfe(opfunc,x,t,d,f,g,gtd,options)
       verbose('reached max number of iterations')
    end
 
-   -- return final vector
-   x[{}] = x_init
-   x:add(t,d)
-
    -- return stuff
    local _,LOpos = bracketFval:min(1)
    LOpos = LOpos[1]
    t = bracket[LOpos]
    f_new = bracketFval[LOpos]
    g_new = bracketGval[LOpos]
+   x[{}] = x_init
+   x:add(t,d)
 	return f_new,g_new,x,t,lsFuncEval
 end
