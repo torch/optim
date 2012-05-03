@@ -10,7 +10,7 @@ local function roots(c)
    local n = c:size(1)-1
    local A = torch.diag(torch.ones(n-1),-1)
    A[1] = -c[{ {2,n+1} }]/c[1];
-   local e = torch.reig(A,'N')
+   local e = torch.eig(A,'N')
    return e
 end
 
@@ -89,7 +89,6 @@ function optim.polyinterp(points,xminBound,xmaxBound)
          
          minPos = min(max(t,points[{minPos,1}]),points[{notMinPos,1}])
       else
-         -- this seems different (?)
          minPos = mean(points[{{},1}])
       end
       return minPos
