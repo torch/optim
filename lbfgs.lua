@@ -73,7 +73,7 @@ function optim.lbfgs(opfunc, x, state)
    if tmp1:sum() <= tolFun then
       -- optimality condition below tolFun
       verbose('optimality condition below tolFun')
-      return x,f
+      return x,f_hist
    end
 
    -- variables cached in state (for tracing)
