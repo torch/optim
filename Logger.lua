@@ -120,7 +120,7 @@ function Logger:plot(...)
       gnuplot.plot(plots)
       gnuplot.title('<Logger::' .. self.name .. '>')
       if self.epsfile then
-         os.execute('rm -f ' .. self.epsfile)
+         os.execute('rm -f "' .. self.epsfile .. '"')
          gnuplot.epsfigure(self.epsfile)
          gnuplot.plot(plots)
          gnuplot.title('<Logger::' .. self.name .. '>')
