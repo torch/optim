@@ -131,8 +131,8 @@ function ConfusionMatrix:render(sortmode, display, block, legendwidth)
    }
 
    -- parse matrix / normalize / count scores
-   local diag = Tensor(#classes)
-   local freqs = Tensor(#classes)
+   local diag = torch.FloatTensor(#classes)
+   local freqs = torch.FloatTensor(#classes)
    local unconf = confusion
    local confusion = confusion:clone()
    local corrects = 0
