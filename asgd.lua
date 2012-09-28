@@ -26,6 +26,8 @@
 -- f(x)  : the function, evaluated before the update
 -- ax    : the averaged x vector
 --
+-- (Clement Farabet, 2012)
+--
 function optim.asgd(opfunc, x, state)
    -- (0) get/update state
    local state = state or {}

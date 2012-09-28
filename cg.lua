@@ -11,11 +11,11 @@
 -- ARGS:
 -- opfunc : a function that takes a single input, the point of evaluation.
 -- x      : the initial point
--- params : a table of parameters and temporary allocations.
---   params.maxEval     : max number of function evaluations
---   params.maxIter     : max number of iterations
---   params.df[0,1,2,3] : if you pass torch.Tensor they will be used for temp storage
---   params.[s,x0]      : if you pass torch.Tensor they will be used for temp storage
+-- state : a table of parameters and temporary allocations.
+--   state.maxEval     : max number of function evaluations
+--   state.maxIter     : max number of iterations
+--   state.df[0,1,2,3] : if you pass torch.Tensor they will be used for temp storage
+--   state.[s,x0]      : if you pass torch.Tensor they will be used for temp storage
 --
 -- RETURN:
 -- x* : the new x vector, at the optimal point
@@ -25,19 +25,19 @@
 --
 -- (Koray Kavukcuoglu, 2012)
 --
-function optim.cg(opfunc, x, params)
+function optim.cg(opfunc, x, state)
    -- parameters
-   local params = params or {}
-   local rho  = params.rho or 0.01
-   local sig  = params.sig or 0.5
-   local int  = params.int or 0.1
-   local ext  = params.ext or 3.0
-   local maxIter  = params.maxIter or 20
-   local ratio = params.ratio or 100
-   local maxEval = params.maxEval or maxIter*1.25
+   local state = state or {}
+   local rho  = state.rho or 0.01
+   local sig  = state.sig or 0.5
+   local int  = state.int or 0.1
+   local ext  = state.ext or 3.0
+   local maxIter  = state.maxIter or 20
+   local ratio = state.ratio or 100
+   local maxEval = state.maxEval or maxIter*1.25
    local red = 1
 
-   local verbose = params.verbose or 0
+   local verbose = state.verbose or 0
 
    local i = 0
    local ls_failed = 0
@@ -48,9 +48,9 @@ function optim.cg(opfunc, x, params)
    local d1,d2,d3 = 0,0,0
    local f1,f2,f3 = 0,0,0
 
-   local df1 = params.df1 or torch.Tensor()
-   local df2 = params.df2 or torch.Tensor()
-   local df3 = params.df3 or torch.Tensor()
+   local df1 = state.df1 or torch.Tensor()
+   local df2 = state.df2 or torch.Tensor()
+   local df3 = state.df3 or torch.Tensor()
    local tdf
 
    df1:resizeAs(x)
@@ -58,13 +58,13 @@ function optim.cg(opfunc, x, params)
    df3:resizeAs(x)
 
    -- search direction
-   local s = params.s or torch.Tensor()
+   local s = state.s or torch.Tensor()
    s:resizeAs(x)
 
    -- we need a temp storage for X
-   local x0 = params.x0 or torch.Tensor()
+   local x0 = state.x0 or torch.Tensor()
    local f0 = 0
-   local df0 = params.df0 or torch.Tensor()
+   local df0 = state.df0 or torch.Tensor()
    x0:resizeAs(x)
    df0:resizeAs(x)
 
@@ -192,11 +192,11 @@ function optim.cg(opfunc, x, params)
          ls_failed = 1
       end
    end
-   params.df0 = df0
-   params.df1 = df1
-   params.df2 = df2
-   params.df3 = df3
-   params.x0 = x0
-   params.s = s
+   state.df0 = df0
+   state.df1 = df1
+   state.df2 = df2
+   state.df3 = df3
+   state.x0 = x0
+   state.s = s
    return x,fx,i
 end

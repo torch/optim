@@ -17,6 +17,8 @@
 -- x     : the new x vector
 -- f(x)  : the function, evaluated before the update
 --
+-- (Clement Farabet, 2012)
+--
 function optim.sgd(opfunc, x, state)
    -- (0) get/update state
    local state = state or {}
