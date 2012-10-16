@@ -81,38 +81,38 @@ end
 
 function ConfusionMatrix:__tostring__()
    self:updateValids()
-   local str = 'ConfusionMatrix:\n'
+   local str = {'ConfusionMatrix:\n'}
    local nclasses = self.nclasses
-   str = str .. '['
+   table.insert(str, '[')
    for t = 1,nclasses do
       local pclass = self.valids[t] * 100
       pclass = string.format('%2.3f', pclass)
       if t == 1 then
-         str = str .. '['
+         table.insert(str, '[')
       else
-         str = str .. ' ['
+         table.insert(str, ' [')
       end
       for p = 1,nclasses do
-         str = str .. '' .. string.format('%8d', self.mat[t][p])
+         table.insert(str, string.format('%8d', self.mat[t][p]))
       end
       if self.classes and self.classes[1] then
          if t == nclasses then
-            str = str .. ']]  ' .. pclass .. '% \t[class: ' .. (self.classes[t] or '') .. ']\n'
+            table.insert(str, ']]  ' .. pclass .. '% \t[class: ' .. (self.classes[t] or '') .. ']\n')
          else
-            str = str .. ']   ' .. pclass .. '% \t[class: ' .. (self.classes[t] or '') .. ']\n'
+            table.insert(str, ']   ' .. pclass .. '% \t[class: ' .. (self.classes[t] or '') .. ']\n')
          end
       else
          if t == nclasses then
-            str = str .. ']]  ' .. pclass .. '% \n'
+            table.insert(str, ']]  ' .. pclass .. '% \n')
          else
-            str = str .. ']   ' .. pclass .. '% \n'
+            table.insert(str, ']   ' .. pclass .. '% \n')
          end
       end
    end
-   str = str .. ' + average row correct: ' .. (self.averageValid*100) .. '% \n'
-   str = str .. ' + average rowUcol correct (VOC measure): ' .. (self.averageUnionValid*100) .. '% \n'
-   str = str .. ' + global correct: ' .. (self.totalValid*100) .. '%'
-   return str
+   table.insert(str, ' + average row correct: ' .. (self.averageValid*100) .. '% \n')
+   table.insert(str, ' + average rowUcol correct (VOC measure): ' .. (self.averageUnionValid*100) .. '% \n')
+   table.insert(str, ' + global correct: ' .. (self.totalValid*100) .. '%')
+   return table.concat(str)
 end
 
 function ConfusionMatrix:render(sortmode, display, block, legendwidth)
