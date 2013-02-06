@@ -43,6 +43,7 @@ function ConfusionMatrix:add(prediction, target)
       local _,target = target_1d:max(1)
       self.mat[target[1]][prediction[1]] = self.mat[target[1]][prediction[1]] + 1
    end
+   collectgarbage() -- the code above is a bit naive, and ends up allocating a lot
 end
 
 function ConfusionMatrix:zero()
