@@ -32,18 +32,20 @@ function ConfusionMatrix:add(prediction, target)
       self.mat[target][prediction] = self.mat[target][prediction] + 1
    elseif type(target) == 'number' then
       -- prediction is a vector, then target assumed to be an index
-      local prediction_1d = torch.FloatTensor(self.nclasses):copy(prediction)
-      local _,prediction = prediction_1d:max(1)
+      self.prediction_1d = self.prediction_1d or torch.FloatTensor(self.nclasses)
+      self.prediction_1d[{}] = prediction
+      local _,prediction = self.prediction_1d:max(1)
       self.mat[target][prediction[1]] = self.mat[target][prediction[1]] + 1
    else
       -- both prediction and target are vectors
-      local prediction_1d = torch.FloatTensor(self.nclasses):copy(prediction)
-      local target_1d = torch.FloatTensor(self.nclasses):copy(target)
-      local _,prediction = prediction_1d:max(1)
-      local _,target = target_1d:max(1)
+      self.prediction_1d = self.prediction_1d or torch.FloatTensor(self.nclasses)
+      self.prediction_1d[{}] = prediction
+      self.target_1d = self.target_1d or torch.FloatTensor(self.nclasses)
+      self.target_1d[{}] = target
+      local _,prediction = self.prediction_1d:max(1)
+      local _,target = self.target_1d:max(1)
       self.mat[target[1]][prediction[1]] = self.mat[target[1]][prediction[1]] + 1
    end
-   collectgarbage() -- the code above is a bit naive, and ends up allocating a lot
 end
 
 function ConfusionMatrix:zero()
