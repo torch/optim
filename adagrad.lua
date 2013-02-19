@@ -15,13 +15,15 @@
 -- f(x)  : the function, evaluated before the update
 --
 --
-function optim.adagrad(opfunc, x, state)
+function optim.adagrad(opfunc, x, config, state)
    -- (0) get/update state
-   if state == nil then
+   if config == nil and state == nil then
       print('no state table, ADAGRAD initializing')
    end
-   local lr = state.learningRate or 1e-3
-   local lrd = state.learningRateDecay or 0
+   local config = config or {}
+   local state = state or config
+   local lr = config.learningRate or 1e-3
+   local lrd = config.learningRateDecay or 0
    state.evalCounter = state.evalCounter or 0
    local nevals = state.evalCounter
 

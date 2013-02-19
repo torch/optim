@@ -19,14 +19,15 @@
 --
 -- (Clement Farabet, 2012)
 --
-function optim.sgd(opfunc, x, state)
+function optim.sgd(opfunc, x, config, state)
    -- (0) get/update state
-   local state = state or {}
-   local lr = state.learningRate or 1e-3
-   local lrd = state.learningRateDecay or 0
-   local wd = state.weightDecay or 0
-   local mom = state.momentum or 0
-   local lrs = state.learningRates
+   local config = config or {}
+   local state = state or config
+   local lr = config.learningRate or 1e-3
+   local lrd = config.learningRateDecay or 0
+   local wd = config.weightDecay or 0
+   local mom = config.momentum or 0
+   local lrs = config.learningRates
    state.evalCounter = state.evalCounter or 0
    local nevals = state.evalCounter
 

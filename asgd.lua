@@ -28,16 +28,17 @@
 --
 -- (Clement Farabet, 2012)
 --
-function optim.asgd(opfunc, x, state)
+function optim.asgd(opfunc, x, config, state)
    -- (0) get/update state
-   local state = state or {}
-   state.eta0 = state.eta0 or 1e-4
-   state.lambda = state.lambda or 1e-4
-   state.alpha = state.alpha or 0.75
-   state.t0 = state.t0 or 1e6
+   local config = config or {}
+   local state = state or config
+   config.eta0 = config.eta0 or 1e-4
+   config.lambda = config.lambda or 1e-4
+   config.alpha = config.alpha or 0.75
+   config.t0 = config.t0 or 1e6
 
    -- (hidden state)
-   state.eta_t = state.eta_t or state.eta0
+   state.eta_t = state.eta_t or config.eta0
    state.mu_t = state.mu_t or 1
    state.t = state.t or 0
 
@@ -45,7 +46,7 @@ function optim.asgd(opfunc, x, state)
    local fx,dfdx = opfunc(x)
 
    -- (2) decay term
-   x:mul(1 - state.lambda*state.eta_t)
+   x:mul(1 - config.lambda*state.eta_t)
 
    -- (3) update x
    x:add(-state.eta_t, dfdx)
@@ -63,8 +64,8 @@ function optim.asgd(opfunc, x, state)
 
    -- (5) update eta_t and mu_t
    state.t = state.t + 1
-   state.eta_t = state.eta0 / math.pow((1 + state.lambda * state.eta0 * state.t), state.alpha)
-   state.mu_t = 1 / math.max(1, state.t - state.t0)
+   state.eta_t = config.eta0 / math.pow((1 + config.lambda * config.eta0 * state.t), config.alpha)
+   state.mu_t = 1 / math.max(1, state.t - config.t0)
 
    -- return x*, f(x) before optimization, and average(x_t0,x_t1,x_t2,...)
    return x,{fx},state.ax

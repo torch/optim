@@ -33,18 +33,19 @@
 --
 -- (Clement Farabet, 2012)
 --
-function optim.lbfgs(opfunc, x, state)
+function optim.lbfgs(opfunc, x, config, state)
    -- get/update state
-   local state = state or {}
-   local maxIter = tonumber(state.maxIter) or 20
-   local maxEval = tonumber(state.maxEval) or maxIter*1.25
-   local tolFun = state.tolFun or 1e-5
-   local tolX = state.tolX or 1e-9
-   local nCorrection = state.nCorrection or 100
-   local lineSearch = state.lineSearch
-   local lineSearchOpts = state.lineSearchOptions
-   local learningRate = state.learningRate or 1
-   local isverbose = state.verbose or false
+   local config = config or {}
+   local state = state or config
+   local maxIter = tonumber(config.maxIter) or 20
+   local maxEval = tonumber(config.maxEval) or maxIter*1.25
+   local tolFun = config.tolFun or 1e-5
+   local tolX = config.tolX or 1e-9
+   local nCorrection = config.nCorrection or 100
+   local lineSearch = config.lineSearch
+   local lineSearchOpts = config.lineSearchOptions
+   local learningRate = config.learningRate or 1
+   local isverbose = config.verbose or false
    
    state.funcEval = state.funcEval or 0
    state.nIter = state.nIter or 0

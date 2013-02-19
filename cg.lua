@@ -25,19 +25,20 @@
 --
 -- (Koray Kavukcuoglu, 2012)
 --
-function optim.cg(opfunc, x, state)
+function optim.cg(opfunc, x, config, state)
    -- parameters
-   local state = state or {}
-   local rho  = state.rho or 0.01
-   local sig  = state.sig or 0.5
-   local int  = state.int or 0.1
-   local ext  = state.ext or 3.0
-   local maxIter  = state.maxIter or 20
-   local ratio = state.ratio or 100
-   local maxEval = state.maxEval or maxIter*1.25
+   local config = config or {}
+   local state = state or config
+   local rho  = config.rho or 0.01
+   local sig  = config.sig or 0.5
+   local int  = config.int or 0.1
+   local ext  = config.ext or 3.0
+   local maxIter  = config.maxIter or 20
+   local ratio = config.ratio or 100
+   local maxEval = config.maxEval or maxIter*1.25
    local red = 1
 
-   local verbose = state.verbose or 0
+   local verbose = config.verbose or 0
 
    local i = 0
    local ls_failed = 0
