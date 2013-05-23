@@ -27,6 +27,7 @@ function optim.sgd(opfunc, x, config, state)
    local lrd = config.learningRateDecay or 0
    local wd = config.weightDecay or 0
    local mom = config.momentum or 0
+   local damp = config.dampening or mom
    local lrs = config.learningRates
    state.evalCounter = state.evalCounter or 0
    local nevals = state.evalCounter
@@ -44,7 +45,7 @@ function optim.sgd(opfunc, x, config, state)
       if not state.dfdx then
          state.dfdx = torch.Tensor():typeAs(dfdx):resizeAs(dfdx):copy(dfdx)
       else
-         state.dfdx:mul(mom):add(1-mom, dfdx)
+         state.dfdx:mul(mom):add(1-damp, dfdx)
       end
       dfdx = state.dfdx
    end
