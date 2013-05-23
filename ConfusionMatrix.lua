@@ -163,15 +163,15 @@ function ConfusionMatrix:render(sortmode, display, block, legendwidth)
 
    -- sort matrix
    if sortmode == 'score' then
-      _,order = sort(diag,1,true)
+      _,order = torch.sort(diag,1,true)
    elseif sortmode == 'occurrence' then
-      _,order = sort(freqs,1,true)
+      _,order = torch.sort(freqs,1,true)
    else
       error('sort mode must be one of: score | occurrence')
    end
 
    -- render matrix
-   local render = zeros(#classes*block, #classes*block)
+   local render = torch.zeros(#classes*block, #classes*block)
    for target = 1,#classes do
       for prediction = 1,#classes do
          render[{ { (target-1)*block+1,target*block }, { (prediction-1)*block+1,prediction*block } }] = confusion[order[target]][order[prediction]]
@@ -185,6 +185,7 @@ function ConfusionMatrix:render(sortmode, display, block, legendwidth)
    end
 
    -- create rendering
+   require 'image'
    require 'qtwidget'
    require 'qttorch'
    local win1 = qtwidget.newimage( (#render)[2]+legendwidth, (#render)[1] )
