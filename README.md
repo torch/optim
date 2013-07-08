@@ -10,17 +10,17 @@ Installation
 ------------
 
 * Install Torch7 (refer to its own documentation).
-* Use `torch-pkg` to install optim:
+* Use `torch-rocks` to install optim:
 
 ```
-torch-pkg install optim
+torch-rocks install optim
 ```
 
 or from these sources:
 
 ```
 cd optim;
-torch-pkg deploy
+torch-rocks make optim-1.0.3-0.rockspec
 ```
 
 Info
