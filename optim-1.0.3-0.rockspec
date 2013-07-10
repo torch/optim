@@ -2,7 +2,7 @@ package = "optim"
 version = "1.0.3-0"
 
 source = {
-   url = "git://github.com/koraykv/optim",
+   url = "git://github.com/torch/optim",
    tag = "1.0.3-0"
 }
 
@@ -11,7 +11,7 @@ description = {
    detailed = [[
 This package contains several optimization routines for Torch.   
   ]],
-   homepage = "https://github.com/koraykv/optim",
+   homepage = "https://github.com/torch/optim",
    license = "BSD"
 }
 
