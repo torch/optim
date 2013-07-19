@@ -7,11 +7,12 @@
 -- x      : the initial point
 -- state  : a table describing the state of the optimizer; after each
 --          call the state is modified
---   state.learningRate      : learning rate
---   state.learningRateDecay : learning rate decay
---   state.weightDecay       : weight decay
---   state.momentum          : momentum
---   state.learningRates     : vector of individual learning rates
+--  state.stepsize = initial step size, common to all components
+--  state.etaplus = multiplicative increase factor, > 1 (default 1.2)
+--  state.etaminus = multiplicative decrease factor, < 1 (default 0.5)
+--  state.stepsizemax = maximum stepsize allowed (default 50)
+--  state.stepsizemin = minimum stepsize allowed (default 1e-6)
+--  state.niter = number of iterations (default 1)
 --
 -- RETURN:
 -- x     : the new x vector
