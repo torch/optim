@@ -125,7 +125,7 @@ function Logger:plot(...)
          gnuplot.plot(plots)
          gnuplot.title('<Logger::' .. self.name .. '>')
          gnuplot.plotflush()
-         gnupot.close(epsfig)
+         gnuplot.close(epsfig)
       end
    end
 end
