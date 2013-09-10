@@ -56,6 +56,6 @@ for i,sample in ipairs(training_samples) do
        -- define eval function
        return f,df_dx
     end
-    optim.sgd(f,x,state)
+    optim.sgd(func,x,state)
 end
 ```
