@@ -197,20 +197,20 @@ function ConfusionMatrix:render(sortmode, display, block, legendwidth)
       win1:setcolor{r=0,g=0,b=0}
       win1:rectangle((#render)[2],(i-1)*block,legendwidth,block)
       win1:fill()
+      
+      -- %
+      win1:setfont(qt.QFont{serif=false, size=fontsize})
+      local gscale = freqs[order[i]]/freqs:max()*0.9+0.1 --3/4
+      win1:setcolor{r=gscale*0.5+0.2,g=gscale*0.5+0.2,b=gscale*0.8+0.2}
+      win1:moveto((#render)[2]+10,i*block-block/3)
+      win1:show(string.format('[%2.2f%% labels]',math.floor(freqs[order[i]]*10000+0.5)/100))
 
       -- legend
       win1:setfont(qt.QFont{serif=false, size=fontsize})
       local gscale = diag[order[i]]*0.8+0.2
       win1:setcolor{r=gscale,g=gscale,b=gscale}
-      win1:moveto((#render)[2]+10,i*block-block/3)
+      win1:moveto(120+(#render)[2]+10,i*block-block/3)
       win1:show(classes[order[i]])
-
-      -- %
-      win1:setfont(qt.QFont{serif=false, size=fontsize})
-      local gscale = freqs[order[i]]/freqs:max()*0.9+0.1 --3/4
-      win1:setcolor{r=gscale*0.5+0.2,g=gscale*0.5+0.2,b=gscale*0.8+0.2}
-      win1:moveto(90+(#render)[2]+10,i*block-block/3)
-      win1:show(string.format('[%2.2f%% labels]',math.floor(freqs[order[i]]*10000+0.5)/100))
 
       for j in ipairs(classes) do
          -- scores
