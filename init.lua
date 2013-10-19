@@ -1,6 +1,7 @@
 
 require 'torch'
 require 'sys'
+require 'paths'
 
 optim = {}
 
