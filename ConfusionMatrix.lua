@@ -1,15 +1,15 @@
-----------------------------------------------------------------------
--- A Confusion Matrix class
---
--- Example:
--- conf = optim.ConfusionMatrix( {'cat','dog','person'} )   -- new matrix
--- conf:zero()                                              -- reset matrix
--- for i = 1,N do
---    conf:add( neuralnet:forward(sample), label )          -- accumulate errors
--- end
--- print(conf)                                              -- print matrix
--- image.display(conf:render())                             -- render matrix
---
+--[[ A Confusion Matrix class
+
+Example:
+
+    conf = optim.ConfusionMatrix( {'cat','dog','person'} )   -- new matrix
+    conf:zero()                                              -- reset matrix
+    for i = 1,N do
+        conf:add( neuralnet:forward(sample), label )         -- accumulate errors
+    end
+    print(conf)                                              -- print matrix
+    image.display(conf:render())                             -- render matrix
+]]
 local ConfusionMatrix = torch.class('optim.ConfusionMatrix')
 
 function ConfusionMatrix:__init(nclasses, classes)

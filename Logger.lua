@@ -1,21 +1,20 @@
-----------------------------------------------------------------------
--- Logger: a simple class to log symbols during training,
---         and automate plot generation
---
--- Example:
--- logger = optim.Logger('somefile.log')    -- file to save stuff
--- 
--- for i = 1,N do                           -- log some symbols during
---    train_error = ...                     -- training/testing
---    test_error = ...
---    logger:add{['training error'] = train_error, 
---               ['test error'] = test_error}
--- end
--- 
--- logger:style{['training error'] = '-',   -- define styles for plots
---              ['test error'] = '-'}
--- logger:plot()                            -- and plot
---
+--[[ Logger: a simple class to log symbols during training,
+        and automate plot generation
+
+Example:
+    logger = optim.Logger('somefile.log')    -- file to save stuff
+    
+    for i = 1,N do                           -- log some symbols during
+        train_error = ...                     -- training/testing
+        test_error = ...
+        logger:add{['training error'] = train_error, 
+            ['test error'] = test_error}
+    end
+    
+    logger:style{['training error'] = '-',   -- define styles for plots
+                 ['test error'] = '-'}
+    logger:plot()                            -- and plot
+]]
 local Logger = torch.class('optim.Logger')
 
 function Logger:__init(filename, timestamp)
