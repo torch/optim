@@ -1,0 +1,4 @@
+return {
+    githubURL = "torch/optim",
+    exclude   = {"test", "polyinterp.lua"}
+}
