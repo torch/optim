@@ -17,10 +17,10 @@ ARGS:
 - `x`      : the initial point
 - `state`  : a table describing the state of the optimizer; after each
          call the state is modified
-  - `state.eta0`              : learning rate
-  - `state.lambda`            : decay term
-  - `state.alpha`             : power for eta update
-  - `state.t0`                : point at which to start averaging
+- `state.eta0`   : learning rate
+- `state.lambda` : decay term
+- `state.alpha`  : power for eta update
+- `state.t0`     : point at which to start averaging
 
 RETURN:
 - `x`     : the new x vector

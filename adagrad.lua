@@ -1,17 +1,17 @@
 --[[ ADAGRAD implementation for SGD
 
 ARGS:
-- opfunc : a function that takes a single input (X), the point of 
+- `opfunc` : a function that takes a single input (X), the point of
          evaluation, and returns f(X) and df/dX
-- x      : the initial point
-- state  : a table describing the state of the optimizer; after each
+- `x` : the initial point
+- `state` : a table describing the state of the optimizer; after each
          call the state is modified
-  state.learningRate      : learning rate
-  state.paramVariance     : vector of temporal variances of parameters
+- `state.learningRate` : learning rate
+- `state.paramVariance` : vector of temporal variances of parameters
 
 RETURN:
-- x     : the new x vector
-- f(x)  : the function, evaluated before the update
+- `x` : the new x vector
+- `f(x)` : the function, evaluated before the update
 
 ]]
 function optim.adagrad(opfunc, x, config, state)

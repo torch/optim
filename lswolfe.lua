@@ -1,25 +1,24 @@
 --[[ A Line Search satisfying the Wolfe conditions
 
 ARGS:
-- `opfunc` : a function (the objective) that takes a single input (X), 
+- `opfunc` : a function (the objective) that takes a single input (X),
          the point of evaluation, and returns f(X) and df/dX
-- `x`      : initial point / starting location
-- `t`      : initial step size
-- `d`      : descent direction
-- `f`      : initial function value
-- `g`      : gradient at initial location
-- `gtd`    : directional derivative at starting location
-- `options`:
-   - `c1`      : sufficient decrease parameter
-   - `c2`      : curvature parameter
-   - `tolX`    : minimum allowable step length
-   - `maxIter` : maximum nb of iterations
+- `x`          : initial point / starting location
+- `t`          : initial step size
+- `d`          : descent direction
+- `f`          : initial function value
+- `g`          : gradient at initial location
+- `gtd`        : directional derivative at starting location
+- `options.c1` : sufficient decrease parameter
+- `options.c2` : curvature parameter
+- `options.tolX`    : minimum allowable step length
+- `options.maxIter` : maximum nb of iterations
 
 RETURN:
-- `f`      : function value at x+t*d
-- `g`      : gradient value at x+t*d
-- `x`      : the next x (=x+t*d)
-- `t`      : the step length
+- `f`          : function value at x+t*d
+- `g`          : gradient value at x+t*d
+- `x`          : the next x (=x+t*d)
+- `t`          : the step length
 - `lsFuncEval` : the number of function evaluations
 ]]
 function optim.lswolfe(opfunc,x,t,d,f,g,gtd,options)

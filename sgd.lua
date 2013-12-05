@@ -1,23 +1,24 @@
 --[[ A plain implementation of SGD
 
 ARGS:
-- `opfunc` : a function that takes a single input (X), the point of 
-             evaluation, and returns f(X) and df/dX
+
+- `opfunc` : a function that takes a single input (X), the point
+             of a evaluation, and returns f(X) and df/dX
 - `x`      : the initial point
 - `config` : a table with configuration parameters for the optimizer
-  - `config.learningRate`      : learning rate
-  - `config.learningRateDecay` : learning rate decay
-  - `config.weightDecay`       : weight decay
-  - `config.momentum`          : momentum
-  - `config.dampening`         : dampening for momentum
-  - `config.nesterov`          : enables Nesterov momentum
+- `config.learningRate`      : learning rate
+- `config.learningRateDecay` : learning rate decay
+- `config.weightDecay`       : weight decay
+- `config.momentum`          : momentum
+- `config.dampening`         : dampening for momentum
+- `config.nesterov`          : enables Nesterov momentum
 - `state`  : a table describing the state of the optimizer; after each
              call the state is modified
-  - `state.learningRates`      : vector of individual learning rates
+- `state.learningRates`      : vector of individual learning rates
 
 RETURN:
-- x     : the new x vector
-- f(x)  : the function, evaluated before the update
+- `x`     : the new x vector
+- `f(x)`  : the function, evaluated before the update
 
 (Clement Farabet, 2012)
 ]]
