@@ -1,17 +1,17 @@
 --[[ A plain implementation of RPROP
 
 ARGS:
-- `opfunc` : a function that takes a single input (X), the point of 
+- `opfunc` : a function that takes a single input (X), the point of
              evaluation, and returns f(X) and df/dX
 - `x`      : the initial point
 - `state`  : a table describing the state of the optimizer; after each
              call the state is modified
- - `state.stepsize`    : initial step size, common to all components
- - `state.etaplus`     : multiplicative increase factor, > 1 (default 1.2)
- - `state.etaminus`    : multiplicative decrease factor, < 1 (default 0.5)
- - `state.stepsizemax` : maximum stepsize allowed (default 50)
- - `state.stepsizemin` : minimum stepsize allowed (default 1e-6)
- - `state.niter`       : number of iterations (default 1)
+- `state.stepsize`    : initial step size, common to all components
+- `state.etaplus`     : multiplicative increase factor, > 1 (default 1.2)
+- `state.etaminus`    : multiplicative decrease factor, < 1 (default 0.5)
+- `state.stepsizemax` : maximum stepsize allowed (default 50)
+- `state.stepsizemin` : minimum stepsize allowed (default 1e-6)
+- `state.niter`       : number of iterations (default 1)
 
 RETURN:
 - `x`     : the new x vector

@@ -13,22 +13,22 @@ rate allows a reduction of confidence in the step size.
 
 ARGS:
 
-- `opfunc` : a function that takes a single input (X), the point of 
+- `opfunc` : a function that takes a single input (X), the point of
          evaluation, and returns f(X) and df/dX
-- `x`      : the initial point
-- `state`  : a table describing the state of the optimizer; after each
+- `x` : the initial point
+- `state` : a table describing the state of the optimizer; after each
          call the state is modified
-  - `state.maxIter`      :  Maximum number of iterations allowed
-  - `state.maxEval`      :  Maximum number of function evaluations
-  - `state.tolFun`       :  Termination tolerance on the first-order optimality
-  - `state.tolX`         :  Termination tol on progress in terms of func/param changes
-  - `state.lineSearch`   :  A line search function
-  - `state.learningRate` : If no line search provided, then a fixed step size is used
+- `state.maxIter` : Maximum number of iterations allowed
+- `state.maxEval` : Maximum number of function evaluations
+- `state.tolFun` : Termination tolerance on the first-order optimality
+- `state.tolX` : Termination tol on progress in terms of func/param changes
+- `state.lineSearch` : A line search function
+- `state.learningRate` : If no line search provided, then a fixed step size is used
 
 RETURN:
 - `x*` : the new `x` vector, at the optimal point
 - `f`  : a table of all function values: 
-     `f[1]` is the value of the function before any optimization
+     `f[1]` is the value of the function before any optimization and
      `f[#f]` is the final fully optimized value, at `x*`
 
 (Clement Farabet, 2012)
