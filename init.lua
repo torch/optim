@@ -1,6 +1,5 @@
 
 require 'torch'
-require 'sys'
 
 optim = {}
 
