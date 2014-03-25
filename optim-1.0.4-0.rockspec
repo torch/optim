@@ -17,7 +17,6 @@ This package contains several optimization routines for Torch.
 
 dependencies = {
    "torch >= 7.0",
-   "sys >= 1.0",
 }
 
 build = {

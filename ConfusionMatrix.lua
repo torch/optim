@@ -56,6 +56,10 @@ function ConfusionMatrix:zero()
    self.averageValid = 0
 end
 
+function isNaN(number)
+  return number ~= number
+end
+
 function ConfusionMatrix:updateValids()
    local total = 0
    for t = 1,self.nclasses do
@@ -69,11 +73,11 @@ function ConfusionMatrix:updateValids()
    local nvalids = 0
    local nunionvalids = 0
    for t = 1,self.nclasses do
-      if not sys.isNaN(self.valids[t]) then
+      if not isNaN(self.valids[t]) then
          self.averageValid = self.averageValid + self.valids[t]
          nvalids = nvalids + 1
       end
-      if not sys.isNaN(self.valids[t]) and not sys.isNaN(self.unionvalids[t]) then
+      if not isNaN(self.valids[t]) and not isNaN(self.unionvalids[t]) then
          self.averageUnionValid = self.averageUnionValid + self.unionvalids[t]
          nunionvalids = nunionvalids + 1
       end
