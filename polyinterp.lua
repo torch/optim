@@ -188,11 +188,13 @@ function optim.polyinterp(points,xminBound,xmaxBound)
    --    end
    -- end
    local cp = torch.cat(Tensor{xminBound,xmaxBound},points[{{},1}])
+   local cpi = zeros(cp:size(1),2)
+   cpi[{ {1,cp:size(1)} , 1 }] = cp
    if not nans then
       local cproots = roots(dParams)
-      local cpi = zeros(cp:size(1),2)
-      cpi[{ {1,cp:size(1)} , 1 }] = cp
       cp = torch.cat(cpi,cproots,1)
+   else
+      cp = cpi
    end
 
    --print(dParams)
