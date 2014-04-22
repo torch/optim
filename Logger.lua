@@ -117,11 +117,13 @@ function Logger:plot(...)
    if plotit then
       self.figure = gnuplot.figure(self.figure)
       gnuplot.plot(plots)
+      gnuplot.grid('on')
       gnuplot.title('<Logger::' .. self.name .. '>')
       if self.epsfile then
          os.execute('rm -f "' .. self.epsfile .. '"')
          local epsfig = gnuplot.epsfigure(self.epsfile)
          gnuplot.plot(plots)
+         gnuplot.grid('on')
          gnuplot.title('<Logger::' .. self.name .. '>')
          gnuplot.plotflush()
          gnuplot.close(epsfig)
