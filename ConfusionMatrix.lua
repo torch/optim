@@ -57,11 +57,11 @@ function ConfusionMatrix:batchAdd(predictions, targets)
       -- prediction is a matrix of class likelihoods
       if predictions:size(2) == 1 then
          -- or prediction just needs flattening
-         preds = predictions:copy()
+         preds = predictions:select(2,1)
       else
          __,preds = predictions:max(2)
+         preds:resize(preds:size(1))
       end
-      preds:resize(preds:size(1))
    else
       error("predictions has invalid number of dimensions")
    end
@@ -73,11 +73,11 @@ function ConfusionMatrix:batchAdd(predictions, targets)
       -- targets is a matrix of one-hot rows
       if targets:size(2) == 1 then
          -- or targets just needs flattening
-         targs = targets:copy()
+         targs = targets:select(2,1)
       else
          __,targs = targets:max(2)
+         targs:resize(targs:size(1))
       end
-      targs:resize(targs:size(1))
    else
       error("targets has invalid number of dimensions")
    end
