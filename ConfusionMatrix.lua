@@ -95,7 +95,7 @@ function ConfusionMatrix:zero()
    self.averageValid = 0
 end
 
-function isNaN(number)
+local function isNaN(number)
   return number ~= number
 end
 
