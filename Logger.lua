@@ -3,18 +3,33 @@
 
 Example:
     logger = optim.Logger('somefile.log')    -- file to save stuff
-    
+
     for i = 1,N do                           -- log some symbols during
         train_error = ...                     -- training/testing
         test_error = ...
-        logger:add{['training error'] = train_error, 
+        logger:add{['training error'] = train_error,
             ['test error'] = test_error}
     end
-    
+
     logger:style{['training error'] = '-',   -- define styles for plots
                  ['test error'] = '-'}
     logger:plot()                            -- and plot
+
+---- OR ---
+
+    logger = optim.Logger('somefile.log')    -- file to save stuff
+    logger:setNames{'training error', 'test error'}
+
+    for i = 1,N do                           -- log some symbols during
+       train_error = ...                     -- training/testing
+       test_error = ...
+       logger:add{train_error, test_error}
+    end
+
+    logger:style{'-', '-'}                   -- define styles for plots
+    logger:plot()                            -- and plot
 ]]
+require 'xlua'
 local Logger = torch.class('optim.Logger')
 
 function Logger:__init(filename, timestamp)
@@ -30,12 +45,28 @@ function Logger:__init(filename, timestamp)
    else
       self.file = io.stdout
       self.name = 'stdout'
-      print('<Logger> warning: no path provided, logging to std out') 
+      print('<Logger> warning: no path provided, logging to std out')
    end
    self.empty = true
    self.symbols = {}
    self.styles = {}
+   self.names = {}
+   self.idx = {}
    self.figure = nil
+end
+
+function Logger:setNames(names)
+   self.names = names
+   self.empty = false
+   self.nsymbols = #names
+   for k,key in pairs(names) do
+      self.file:write(key .. '\t')
+      self.symbols[k] = {}
+      self.styles[k] = {'+'}
+      self.idx[key] = k
+   end
+   self.file:write('\n')
+   self.file:flush()
 end
 
 function Logger:add(symbols)
@@ -47,7 +78,9 @@ function Logger:add(symbols)
          self.file:write(k .. '\t')
          self.symbols[k] = {}
          self.styles[k] = {'+'}
+         self.names[k] = k
       end
+      self.idx = self.names
       self.file:write('\n')
    end
    -- (2) print all symbols on one row
@@ -82,15 +115,15 @@ end
 
 function Logger:plot(...)
    if not xlua.require('gnuplot') then
-      if not self.warned then 
-         print('<Logger> warning: cannot plot with this version of Torch') 
+      if not self.warned then
+         print('<Logger> warning: cannot plot with this version of Torch')
          self.warned = true
       end
       return
    end
    local plotit = false
    local plots = {}
-   local plotsymbol = 
+   local plotsymbol =
       function(name,list)
          if #list > 1 then
             local nelts = #list
@@ -99,7 +132,7 @@ function Logger:plot(...)
                plot_y[i] = list[i]
             end
             for _,style in ipairs(self.styles[name]) do
-               table.insert(plots, {name, plot_y, style})
+               table.insert(plots, {self.names[name], plot_y, style})
             end
             plotit = true
          end
@@ -110,8 +143,8 @@ function Logger:plot(...)
          plotsymbol(name,list)
       end
    else -- plot given symbols
-      for i,name in ipairs(args) do
-         plotsymbol(name,self.symbols[name])
+      for _,name in ipairs(args) do
+         plotsymbol(self.idx[name], self.symbols[self.idx[name]])
       end
    end
    if plotit then
