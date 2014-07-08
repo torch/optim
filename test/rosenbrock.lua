@@ -13,7 +13,7 @@ function rosenbrock(x)
    -- (1) compute f(x)
    local d = x:size(1)
    -- x1 =  x(i)^2
-   local x1 = torch.Tensor(d-1):copy(x:narrow(1,1,d-1))
+   local x1 = x.new(d-1):copy(x:narrow(1,1,d-1))
    -- x(i+1) - x(i)^2
    x1:cmul(x1):mul(-1):add(x:narrow(1,2,d-1))
 
@@ -21,7 +21,7 @@ function rosenbrock(x)
    x1:cmul(x1):mul(100)
 
    -- x(i)
-   local x0 = torch.Tensor(d-1):copy(x:narrow(1,1,d-1))
+   local x0 = x.new(d-1):copy(x:narrow(1,1,d-1))
    -- 1-x(i)
    x0:mul(-1):add(1)
    -- (1-x(i))^2
@@ -31,7 +31,7 @@ function rosenbrock(x)
    local fout = x1:sum()
 
    -- (2) compute f(x)/dx
-   local dxout = torch.Tensor():resizeAs(x):zero()
+   local dxout = x.new():resizeAs(x):zero()
    -- df(1:D-1) = - 400*x(1:D-1).*(x(2:D)-x(1:D-1).^2) - 2*(1-x(1:D-1));
    
    x1:copy(x:narrow(1,1,d-1))
