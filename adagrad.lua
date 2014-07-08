@@ -38,7 +38,7 @@ function optim.adagrad(opfunc, x, config, state)
       state.paramStd = torch.Tensor():typeAs(x):resizeAs(dfdx)
    end
    state.paramVariance:addcmul(1,dfdx,dfdx)
-   torch.sqrt(state.paramStd,state.paramVariance)
+   state.paramStd:resizeAs(state.paramVariance):copy(state.paramVariance):sqrt()
    x:addcdiv(-clr, dfdx,state.paramStd:add(1e-10))
 
    -- (5) update evaluation counter
