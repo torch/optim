@@ -123,6 +123,7 @@ function ConfusionMatrix:matthewsCorrelation()
       end
    end
    return mcc
+end
 
 function ConfusionMatrix:sensitivity()
    tp, tn, fp, fn = getErrors()
