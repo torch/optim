@@ -94,18 +94,18 @@ function optim.lbfgs(opfunc, x, config, state)
       state.nIter = state.nIter + 1
 
       ------------------------------------------------------------
-      -- computer gradient descent direction
+      -- compute gradient descent direction
       ------------------------------------------------------------
       if state.nIter == 1 then
-         d = -g
+         d = g:clone():mul(-1) -- -g
          old_dirs = {}
          old_stps = {}
          Hdiag = 1
       else
          -- do lbfgs update (update memory)
-         local y = g - g_old
-         local s = d*t
-         local ys = y*s
+         local y = g:clone():add(-1, g_old)  -- g - g_old
+         local s = d:clone():mul(t)  -- d*t
+         local ys = y:dot(s)  -- y*s
          if ys > 1e-10 then
             -- updating memory
             if #old_dirs == nCorrection then
@@ -125,7 +125,7 @@ function optim.lbfgs(opfunc, x, config, state)
             append(old_stps, y)
 
             -- update scale of initial Hessian approximation
-            Hdiag = ys/(y*y)
+            Hdiag = ys / y:dot(y)  -- (y*y)
 
             -- cleanup
             collectgarbage()
@@ -138,27 +138,31 @@ function optim.lbfgs(opfunc, x, config, state)
 
          state.ro = state.ro or zeros(nCorrection); local ro = state.ro
          for i = 1,k do
-            ro[i] = 1 / (old_stps[i] * old_dirs[i])
+            ro[i] = 1 / old_stps[i]:dot(old_dirs[i])
          end
 
-         state.q = state.q or zeros(nCorrection+1,p); local q = state.q
-         state.r = state.r or zeros(nCorrection+1,p); local r = state.r
-         state.al = state.al or zeros(nCorrection); local al = state.al
-         state.be = state.be or zeros(nCorrection); local be = state.be
+         state.q = state.q or zeros(nCorrection+1,p):typeAs(g) 
+         local q = state.q
+         state.r = state.r or zeros(nCorrection+1,p):typeAs(g)
+         local r = state.r
+         state.al = state.al or zeros(nCorrection):typeAs(g)
+         local al = state.al
+         state.be = state.be or zeros(nCorrection):typeAs(g)
+         local be = state.be
 
-         q[k+1] = -g
+         q[k+1] = g:clone():mul(-1)  -- -g
 
          for i = k,1,-1 do
-            al[i] = old_dirs[i] * q[i+1] * ro[i]
+            al[i] = old_dirs[i]:dot(q[i+1]) * ro[i]
             q[i] = q[i+1]
             q[i]:add(-al[i], old_stps[i])
          end
 
          -- multiply by initial Hessian
-         r[1] = q[1] * Hdiag
+         r[1] = q[1]:clone():mul(Hdiag)  -- q[1] * Hdiag
 
          for i = 1,k do
-            be[i] = old_stps[i] * r[i] * ro[i]
+            be[i] = old_stps[i]:dot(r[i]) * ro[i]
             r[i+1] = r[i]
             r[i+1]:add((al[i] - be[i]), old_dirs[i])
          end
@@ -173,7 +177,7 @@ function optim.lbfgs(opfunc, x, config, state)
       -- compute step length
       ------------------------------------------------------------
       -- directional derivative
-      local gtd = g * d
+      local gtd = g:dot(d)  -- g * d
 
       -- check that progress can be made along that direction
       if gtd > -tolX then
