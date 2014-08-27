@@ -161,6 +161,23 @@ C_f1 = tp[{1,3}]*2 / (tp[{1,3}]*2 + fp[{1,3}]+fn[{1,3}])
 assert(numeq(C_f1,f1[{1,3}]))
 
 
+-- Further tests
+tn = torch.Tensor({825}):resize(1,1):float()
+tp = torch.Tensor({75}):resize(1,1):float()
+fn = torch.Tensor({25}):resize(1,1):float()
+fp = torch.Tensor({75}):resize(1,1):float()
+
+c1 = optim.ConfusionMatrix({'A','B'})
+c1.mat[{1,1}] = tn[{1,1}]
+c1.mat[{2,2}] = tp[{1,1}]
+c1.mat[{2,1}] = fn[{1,1}]
+c1.mat[{1,2}] = fp[{1,1}]
+
+mcc = -- 
+assert( numeq(0.560, c1:matthewsCorrelation()[{1,1}], -3) )
+assert( numeq(0.75, c1:sensitivity()[{1,2}], -3) )
+assert( numeq(0.6, c1:F1()[{1,2}], -3) )
+
 print('OK')
 print("------------------------------")
 
