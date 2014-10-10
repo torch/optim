@@ -26,16 +26,25 @@ function ConfusionMatrix:__init(nclasses, classes)
    self.classes = classes or {}
 end
 
+-- takes scalar prediction and target as input
+function ConfusionMatrix:_add(p, t)
+   -- non-positive values are considered missing
+   -- and therefore ignored
+   if t > 0 then 
+      self.mat[t][p] = self.mat[t][p] + 1
+   end
+end
+
 function ConfusionMatrix:add(prediction, target)
    if type(prediction) == 'number' then
       -- comparing numbers
-      self.mat[target][prediction] = self.mat[target][prediction] + 1
+      self:_add(prediction, target)
    elseif type(target) == 'number' then
       -- prediction is a vector, then target assumed to be an index
       self.prediction_1d = self.prediction_1d or torch.FloatTensor(self.nclasses)
       self.prediction_1d:copy(prediction)
       local _,prediction = self.prediction_1d:max(1)
-      self.mat[target][prediction[1]] = self.mat[target][prediction[1]] + 1
+      self:_add(prediction[1], target)
    else
       -- both prediction and target are vectors
       self.prediction_1d = self.prediction_1d or torch.FloatTensor(self.nclasses)
@@ -44,7 +53,7 @@ function ConfusionMatrix:add(prediction, target)
       self.target_1d:copy(target)
       local _,prediction = self.prediction_1d:max(1)
       local _,target = self.target_1d:max(1)
-      self.mat[target[1]][prediction[1]] = self.mat[target[1]][prediction[1]] + 1
+      self:_add(prediction[1], target[1])
    end
 end
 
@@ -83,7 +92,7 @@ function ConfusionMatrix:batchAdd(predictions, targets)
    end
    --loop over each pair of indices
    for i = 1,preds:size(1) do
-      self.mat[targs[i]][preds[i]] = self.mat[targs[i]][preds[i]] + 1
+      self:_add(preds[i], targs[i])
    end
 end
 
@@ -130,7 +139,7 @@ function ConfusionMatrix:sensitivity()
    return torch.cdiv(tp, torch.add(tp + fn))  -- TP / (TP + FN)
 end
 
-function ConfusionMatrix:spcificity()
+function ConfusionMatrix:specificity()
    tp, tn, fp, fn = getErrors()
    return torch.cdiv(tn, torch.add(tn + fp))  -- TN / TN + FP
 end

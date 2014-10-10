@@ -27,3 +27,7 @@ cm:updateValids()
 
 print'ConfusionMatrix:__tostring__() test'
 print(cm)
+
+target = 0
+cm:add(prediction, target)
+assert(cm.mat:sum() == batch_size + 1, 'too many examples')
