@@ -104,18 +104,18 @@ function ConfusionMatrix:zero()
    self.averageValid = 0
 end
 
-local function getErrors() 
+function ConfusionMatrix:getErrors() 
    local tp, fn, fp, tn
    tp  = torch.diag(self.mat):resize(1,self.nclasses )
    fn = (torch.sum(self.mat,2)-torch.diag(self.mat)):t()
-   fp = torch.sum(conf.mat,1)-torch.diag(conf.mat)
-   tn  = torch.Tensor(1,n_classes):fill(torch.sum(conf.mat)):typeAs(tp) - tp - fn - fp
+   fp = torch.sum(self.mat,1)-torch.diag(self.mat)
+   tn  = torch.Tensor(1,self.nclasses):fill(self.mat:sum()):typeAs(tp) - tp - fn - fp
 
     return tp, tn, fp, fn
    end
 
 function ConfusionMatrix:matthewsCorrelation()
-   tp, tn, fp, fn = getErrors() 
+   tp, tn, fp, fn = self:getErrors() 
    
    -- NUM = TP x TN - FP x FN
    local numerator = torch.cmul(tp,tn) + torch.cmul(fp,fn)
@@ -135,13 +135,13 @@ function ConfusionMatrix:matthewsCorrelation()
 end
 
 function ConfusionMatrix:sensitivity()
-   tp, tn, fp, fn = getErrors()
-   return torch.cdiv(tp, torch.add(tp + fn))  -- TP / (TP + FN)
+   tp, tn, fp, fn = self:getErrors()
+   return torch.cdiv(tp, torch.add(tp,fn))  -- TP / (TP + FN)
 end
 
 function ConfusionMatrix:specificity()
-   tp, tn, fp, fn = getErrors()
-   return torch.cdiv(tn, torch.add(tn + fp))  -- TN / TN + FP
+   tp, tn, fp, fn = self:getErrors()
+   return torch.cdiv(tn, torch.add(tn,fp))  -- TN / TN + FP
 end
 
 local function isNaN(number)
