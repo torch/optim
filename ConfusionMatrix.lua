@@ -26,16 +26,25 @@ function ConfusionMatrix:__init(nclasses, classes)
    self.classes = classes or {}
 end
 
+-- takes scalar prediction and target as input
+function ConfusionMatrix:_add(p, t)
+   -- non-positive values are considered missing
+   -- and therefore ignored
+   if t > 0 then 
+      self.mat[t][p] = self.mat[t][p] + 1
+   end
+end
+
 function ConfusionMatrix:add(prediction, target)
    if type(prediction) == 'number' then
       -- comparing numbers
-      self.mat[target][prediction] = self.mat[target][prediction] + 1
+      self:_add(prediction, target)
    elseif type(target) == 'number' then
       -- prediction is a vector, then target assumed to be an index
       self.prediction_1d = self.prediction_1d or torch.FloatTensor(self.nclasses)
       self.prediction_1d:copy(prediction)
       local _,prediction = self.prediction_1d:max(1)
-      self.mat[target][prediction[1]] = self.mat[target][prediction[1]] + 1
+      self:_add(prediction[1], target)
    else
       -- both prediction and target are vectors
       self.prediction_1d = self.prediction_1d or torch.FloatTensor(self.nclasses)
@@ -44,7 +53,7 @@ function ConfusionMatrix:add(prediction, target)
       self.target_1d:copy(target)
       local _,prediction = self.prediction_1d:max(1)
       local _,target = self.target_1d:max(1)
-      self.mat[target[1]][prediction[1]] = self.mat[target[1]][prediction[1]] + 1
+      self:_add(prediction[1], target[1])
    end
 end
 
@@ -83,7 +92,7 @@ function ConfusionMatrix:batchAdd(predictions, targets)
    end
    --loop over each pair of indices
    for i = 1,preds:size(1) do
-      self.mat[targs[i]][preds[i]] = self.mat[targs[i]][preds[i]] + 1
+      self:_add(preds[i], targs[i])
    end
 end
 
@@ -95,100 +104,48 @@ function ConfusionMatrix:zero()
    self.averageValid = 0
 end
 
-local function isNaN(number)
-  return number ~= number
-end
-
-local function remNaN(x,self)
-      for i = 1, self.nclasses  do
-      if isNaN(x[{1,i}]) then
-         x[{1,i}] = 0
-      end
-   end
-   return x
-end
-
-
-local function getErrors(self) 
+function ConfusionMatrix:getErrors() 
    local tp, fn, fp, tn
    tp  = torch.diag(self.mat):resize(1,self.nclasses )
    fn = (torch.sum(self.mat,2)-torch.diag(self.mat)):t()
    fp = torch.sum(self.mat,1)-torch.diag(self.mat)
-   tn  = torch.Tensor(1,self.nclasses):fill(torch.sum(self.mat)):typeAs(tp) - tp - fn - fp
+   tn  = torch.Tensor(1,self.nclasses):fill(self.mat:sum()):typeAs(tp) - tp - fn - fp
 
     return tp, tn, fp, fn
    end
 
-
-function ConfusionMatrix:getConfusion()
-   return getErrors(self)
-end
-
 function ConfusionMatrix:matthewsCorrelation()
-   local mcc,numerator, denominator
-   tp, tn, fp, fn = getErrors(self) 
-   numerator = torch.cmul(tp,tn) - torch.cmul(fp,fn)
-   denominator = torch.sqrt((tp+fp):cmul(tp+fn):cmul(tn+fp):cmul(tn+fn))
-   mcc = torch.cdiv(numerator,denominator)
-   mcc = remNaN(mcc,self)
+   tp, tn, fp, fn = self:getErrors() 
+   
+   -- NUM = TP x TN - FP x FN
+   local numerator = torch.cmul(tp,tn) + torch.cmul(fp,fn)
+   
+   -- DENOM = sqrt( (TP + FP)(TP + FN)(FN +FP)(TN +FN) )
+   local denominator = torch.sqrt(torch.ones(1,n_classes):typeAs(tp):cmul(tp+fp):cmul(tp+fn):cmul(tn+fp):cmul(tn+fn))
+   
+   local mcc = torch.cdiv(numerator,denominator)
+
+   -- CHECK for divison by 0
+   for i = 1, n_classes  do
+      if denominator[{1,i}] == 0 then
+         mcc[{1,i}] = 0
+      end
+   end
    return mcc
 end
 
 function ConfusionMatrix:sensitivity()
-   tp, tn, fp, fn = getErrors(self)
-   res = torch.cdiv(tp, tp + fn )
-   res = remNaN(res,self)
-   return res -- TP / (TP + FN)
+   tp, tn, fp, fn = self:getErrors()
+   return torch.cdiv(tp, torch.add(tp,fn))  -- TP / (TP + FN)
 end
 
 function ConfusionMatrix:specificity()
-   tp, tn, fp, fn = getErrors(self)
-   res =  torch.cdiv(tn, tn + fp)  -- TN / (TN + FP)
-   res = remNaN(res,self)
-   return res -- TP / (TP + FN)
-
+   tp, tn, fp, fn = self:getErrors()
+   return torch.cdiv(tn, torch.add(tn,fp))  -- TN / TN + FP
 end
 
-function ConfusionMatrix:positivePredictiveValue()
-   tp, tn, fp, fn = getErrors(self)
-   res = torch.cdiv(tp, tp + fp )  -- TP / (TP + FP)
-   res = remNaN(res,self)
-   return res -- TP / (TP + FN)
-end
-
-function ConfusionMatrix:negativePredictiveValue()
-   tp, tn, fp, fn = getErrors(self)
-   res = torch.cdiv(tn, tn + fn )  -- TN / (TN + FN)
-   res = remNaN(res,self)
-   return res -- TP / (TP + FN)
-end
-
-function ConfusionMatrix:falsePositiveRate()
-   tp, tn, fp, fn = getErrors(self)
-   res = torch.cdiv(fp, fp + tn)  -- FP / (FP + TN)
-   res = remNaN(res,self)
-   return res -- TP / (TP + FN)
-end
-
-function ConfusionMatrix:falseDiscoveryRate()
-   tp, tn, fp, fn = getErrors(self)
-   res = torch.cdiv(fp, tp + fp)  -- FP / (TP + FP)
-   res = remNaN(res,self)
-   return res -- TP / (TP + FN)
-end
-
-function ConfusionMatrix:classAccuracy()
-   tp, tn, fp, fn = getErrors(self)
-   res = torch.cdiv(tp + tn, tp + tn + fp + fn)  -- (TP + FN) / (TN + TP + FN + FP)
-   res = remNaN(res,self)
-   return res -- TP / (TP + FN)
-end
-
-function ConfusionMatrix:F1()
-   tp, tn, fp, fn = getErrors(self)
-   res = torch.cdiv(tp * 2, tp * 2 + fp + fn)  -- (2*TP)/(TP*2+fp+fn)
-   res = remNaN(res,self)
-   return res -- TP / (TP + FN)
+local function isNaN(number)
+  return number ~= number
 end
 
 function ConfusionMatrix:updateValids()
