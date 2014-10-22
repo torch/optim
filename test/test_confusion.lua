@@ -12,6 +12,7 @@ prediction = torch.randn(#classes)
 
 print'ConfusionMatrix:add() test'
 cm:add(prediction, target)
+cm:add(prediction, torch.randn(#classes))
 
 batch_size = 8
 
@@ -20,7 +21,7 @@ predictions = torch.randn(batch_size, #classes)
 
 print'ConfusionMatrix:batchAdd() test'
 cm:batchAdd(predictions, targets)
-assert(cm.mat:sum() == batch_size + 1, 'missing examples')
+assert(cm.mat:sum() == batch_size + 2, 'missing examples')
 
 print'ConfusionMatrix:updateValids() test'
 cm:updateValids()
@@ -30,4 +31,4 @@ print(cm)
 
 target = 0
 cm:add(prediction, target)
-assert(cm.mat:sum() == batch_size + 1, 'too many examples')
+assert(cm.mat:sum() == batch_size + 2, 'too many examples')
