@@ -2,7 +2,7 @@
 require 'unsup'
 require 'torch'
 require 'gnuplot'
-dofile 'sparsecoding.lua'
+require 'sparsecoding'
 
 -- gnuplot.setgnuplotexe('/usr/bin/gnuplot44')
 -- gnuplot.setgnuplotterminal('x11')

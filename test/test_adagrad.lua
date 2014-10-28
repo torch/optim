@@ -1,8 +1,8 @@
 require 'torch'
 require 'optim'
 
-dofile 'rosenbrock.lua'
-dofile 'l2.lua'
+require 'rosenbrock'
+require 'l2'
 
 x = torch.Tensor(2):fill(0)
 fx = {}

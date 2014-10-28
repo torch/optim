@@ -1,8 +1,8 @@
 require 'torch'
 require 'optim'
 
-dofile 'rosenbrock.lua'
-dofile 'l2.lua'
+require 'rosenbrock'
+require 'l2'
 
 print('--- batch test w/ line search ---')
 
