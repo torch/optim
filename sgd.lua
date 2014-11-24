@@ -48,7 +48,7 @@ function optim.sgd(opfunc, x, config, state)
          if not state.decayParameters then
             state.decayParameters = torch.Tensor():typeAs(x):resizeAs(dfdx)
          end
-         state.decayParameters:copy(wds):cmul(x)
+         state.decayParameters:cmul(wds, x)
          dfdx:add(wd, state.decayParameters)
       else
          dfdx:add(wd, x)
@@ -77,7 +77,7 @@ function optim.sgd(opfunc, x, config, state)
       if not state.deltaParameters then
          state.deltaParameters = torch.Tensor():typeAs(x):resizeAs(dfdx)
       end
-      state.deltaParameters:copy(lrs):cmul(dfdx)
+      state.deltaParameters:cmul(lrs, dfdx)
       x:add(-clr, state.deltaParameters)
    else
       x:add(-clr, dfdx)
