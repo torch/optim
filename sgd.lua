@@ -44,15 +44,13 @@ function optim.sgd(opfunc, x, config, state)
 
    -- (2) weight decay with single or individual parameters
    if wd ~= 0 then
-      if wds then
-         if not state.decayParameters then
-            state.decayParameters = torch.Tensor():typeAs(x):resizeAs(dfdx)
-         end
-         state.decayParameters:cmul(wds, x)
-         dfdx:add(wd, state.decayParameters)
-      else
-         dfdx:add(wd, x)
+      dfdx:add(wd, x)
+   elseif wds then
+      if not state.decayParameters then
+         state.decayParameters = torch.Tensor():typeAs(x):resizeAs(dfdx)
       end
+      state.decayParameters:cmul(wds, x)
+      dfdx:add(state.decayParameters)
    end
 
    -- (3) apply momentum
