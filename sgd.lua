@@ -9,6 +9,7 @@ ARGS:
 - `config.learningRate`      : learning rate
 - `config.learningRateDecay` : learning rate decay
 - `config.weightDecay`       : weight decay
+- `config.weightDecays`      : vector of individual weight decays
 - `config.momentum`          : momentum
 - `config.dampening`         : dampening for momentum
 - `config.nesterov`          : enables Nesterov momentum
@@ -33,6 +34,7 @@ function optim.sgd(opfunc, x, config, state)
    local damp = config.dampening or mom
    local nesterov = config.nesterov or false
    local lrs = config.learningRates
+   local wds = config.weightDecays
    state.evalCounter = state.evalCounter or 0
    local nevals = state.evalCounter
    assert(not nesterov or (mom > 0 and damp == 0), "Nesterov momentum requires a momentum and zero dampening")
@@ -40,9 +42,15 @@ function optim.sgd(opfunc, x, config, state)
    -- (1) evaluate f(x) and df/dx
    local fx,dfdx = opfunc(x)
 
-   -- (2) weight decay
+   -- (2) weight decay with single or individual parameters
    if wd ~= 0 then
       dfdx:add(wd, x)
+   elseif wds then
+      if not state.decayParameters then
+         state.decayParameters = torch.Tensor():typeAs(x):resizeAs(dfdx)
+      end
+      state.decayParameters:copy(wds):cmul(x)
+      dfdx:add(state.decayParameters)
    end
 
    -- (3) apply momentum
