@@ -32,3 +32,8 @@ print(cm)
 target = 0
 cm:add(prediction, target)
 assert(cm.mat:sum() == batch_size + 2, 'too many examples')
+
+-- FAR/FRR testing on identify matrix. FRR/FAR should be zero for identity.
+cm.mat = torch.eye(#classes, #classes)
+classFrrs, classFars, frrs, fars = cm:farFrr()
+assert(classFrrs:sum() + classFars:sum() == 0, "Incorrect values")
