@@ -141,6 +141,49 @@ function ConfusionMatrix:updateValids()
    self.averageUnionValid = self.averageUnionValid / nunionvalids
 end
 
+-- Calculating FAR/FRR associated with the confusion matrix
+
+function ConfusionMatrix:farFrr()
+   local cmat = self.mat
+   local noOfClasses = cmat:size()[1]
+   self._frrs = self._frrs or torch.zeros(noOfClasses)
+   self._frrs:zero()
+   self._classFrrs = self._classFrrs or torch.zeros(noOfClasses)
+   self._classFrrs:zero()
+   self._classFrrs:add(-1)
+   self._fars = self._fars or torch.zeros(noOfClasses)
+   self._fars:zero()
+   self._classFars = self._classFars or torch.zeros(noOfClasses)
+   self._classFars:zero()
+   self._classFars:add(-1)
+   local classSamplesCount = cmat:sum(2)
+   local indx = 1
+   for i=1,noOfClasses do
+      if classSamplesCount[i][1] ~= 0 then
+         self._frrs[indx] = 1 - cmat[i][i]/classSamplesCount[i][1]
+         self._classFrrs[i] = self._frrs[indx]
+         -- Calculating FARs
+         local farNumerator = 0
+         local farDenominator = 0
+         for j=1, noOfClasses do
+            if i ~= j then
+               if classSamplesCount[j][1] ~= 0 then
+                  farNumerator = farNumerator + cmat[j][i]/classSamplesCount[j][1]
+                  farDenominator  = farDenominator + 1
+               end
+            end
+         end
+         self._fars[indx] = farNumerator/farDenominator
+         self._classFars[i] = self._fars[indx]
+         indx = indx + 1
+      end
+   end
+   indx = indx - 1
+   local returnFrrs = self._frrs[{{1, indx}}]
+   local returnFars = self._fars[{{1, indx}}]
+   return self._classFrrs, self._classFars, returnFrrs, returnFars
+end
+
 function ConfusionMatrix:__tostring__()
    self:updateValids()
    local str = {'ConfusionMatrix:\n'}
