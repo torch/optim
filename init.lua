@@ -18,6 +18,7 @@ torch.include('optim', 'lswolfe.lua')
 
 -- helpers
 torch.include('optim', 'polyinterp.lua')
+torch.include('optim', 'checkgrad.lua')
 
 -- tools
 torch.include('optim', 'ConfusionMatrix.lua')
