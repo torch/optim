@@ -21,6 +21,7 @@ RETURN:
 ]]
 
 function optim.adam(opfunc, x, config, state)
+    -- (0) get/update state
     local config = config or {}
     local state = state or config
     local lr = config.learningRate or 2e-6
@@ -30,10 +31,10 @@ function optim.adam(opfunc, x, config, state)
     local epsilon = config.epsilon or 10e-8
     local lambda = config.lambda or 10e-8
 
-    -- get parameters
+    -- (1) evaluate f(x) and df/dx
     local fx, dfdx = opfunc(x)
 
-    state.t = state.t or 1 -- timestep
+    state.t = state.t or 1 -- evaluation counter
     state.m = state.m or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0) -- Initialize first moment vector
     state.v = state.v or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0) -- Initialize second moment vector
 
@@ -43,7 +44,8 @@ function optim.adam(opfunc, x, config, state)
 
     local update = torch.cmul(state.m, torch.pow(torch.add(torch.pow(state.v, 2), epsilon),-1))
     update:mul(lr * torch.sqrt(1-torch.pow((1-beta2),2)) * torch.pow(1-torch.pow((1-beta1),2), -1)) -- compute final update
-
+    
+    -- (2) update x and evaluation counter
     x:add(-update)
     state.t = state.t + 1
 
