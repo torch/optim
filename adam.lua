@@ -21,7 +21,6 @@ RETURN:
 ]]
 
 function optim.adam(opfunc, x, config, state)
-    -- get parameters
     local config = config or {}
     local state = state or config
     local lr = config.learningRate or 2e-6
@@ -31,18 +30,19 @@ function optim.adam(opfunc, x, config, state)
     local epsilon = config.epsilon or 10e-8
     local lambda = config.lambda or 10e-8
 
+    -- get parameters
     local fx, dfdx = opfunc(x)
 
-    state.t = state.t or 1
-    state.m = state.m or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0)
-    state.v = state.v or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0)
+    state.t = state.t or 1 -- timestep
+    state.m = state.m or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0) -- Initialize first moment vector
+    state.v = state.v or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0) -- Initialize second moment vector
 
-    local bt1 = 1 - (1-beta1)*torch.pow(lambda,state.t-1)
-    state.m = torch.add(torch.mul(dfdx, bt1), torch.mul(state.m, 1-bt1))
-    state.v = torch.add(torch.mul(torch.pow(dfdx, 2), beta2), torch.mul(state.v, 1-beta2))
+    local bt1 = 1 - (1-beta1)*torch.pow(lambda,state.t-1) -- Decay the first moment running average coefficient
+    state.m = torch.add(torch.mul(dfdx, bt1), torch.mul(state.m, 1-bt1)) -- Update biased first moment estimate
+    state.v = torch.add(torch.mul(torch.pow(dfdx, 2), beta2), torch.mul(state.v, 1-beta2)) -- Update biased second raw moment estimate
 
     local update = torch.cmul(state.m, torch.pow(torch.add(torch.pow(state.v, 2), epsilon),-1))
-    update:mul(lr * torch.sqrt(1-torch.pow((1-beta2),2)) * torch.pow(1-torch.pow((1-beta1),2), -1))
+    update:mul(lr * torch.sqrt(1-torch.pow((1-beta2),2)) * torch.pow(1-torch.pow((1-beta1),2), -1)) -- compute final update
 
     x:add(-update)
     state.t = state.t + 1
