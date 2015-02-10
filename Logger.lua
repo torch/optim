@@ -53,6 +53,7 @@ function Logger:__init(filename, timestamp)
    self.names = {}
    self.idx = {}
    self.figure = nil
+   self.showPlot = true
 end
 
 function Logger:setNames(names)
@@ -148,10 +149,12 @@ function Logger:plot(...)
       end
    end
    if plotit then
-      self.figure = gnuplot.figure(self.figure)
-      gnuplot.plot(plots)
-      gnuplot.grid('on')
-      gnuplot.title('<Logger::' .. self.name .. '>')
+      if self.showPlot then
+         self.figure = gnuplot.figure(self.figure)
+         gnuplot.plot(plots)
+         gnuplot.grid('on')
+         gnuplot.title('<Logger::' .. self.name .. '>')
+      end
       if self.epsfile then
          os.execute('rm -f "' .. self.epsfile .. '"')
          local epsfig = gnuplot.epsfigure(self.epsfile)
