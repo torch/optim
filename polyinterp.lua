@@ -23,22 +23,29 @@ local function roots(c)
    local nz = 0
    for i=c:size(1),1,-1 do
       if c[i] ~= 0 then
-	 break
+         break
       else
-	 nz = nz + 1
+         nz = nz + 1
       end
    end
    c=c[{ {1,c:size(1)-nz} }]
 
    local n = c:size(1)-1
-   if n > 0 then
+   if n == 1 then
+      local e = torch.Tensor({{-c[2]/c[1], 0}})
+      if nz > 0 then
+         return torch.cat(e, torch.zeros(nz, 2), 1)
+      else
+         return e
+      end
+   elseif n > 1 then
       local A = torch.diag(torch.ones(n-1),-1)
       A[1] = -c[{ {2,n+1} }]/c[1];
       local e = torch.eig(A,'N')
       if nz > 0 then
-	 return torch.cat(e,torch.zeros(nz,2))
+         return torch.cat(e, torch.zeros(nz,2), 1)
       else
-	 return e
+         return e
       end
    else
       return torch.zeros(nz,2)
