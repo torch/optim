@@ -29,7 +29,7 @@ function optim.adam(opfunc, x, config, state)
     local beta1 = config.beta1 or 0.1
     local beta2 = config.beta2 or 0.001
     local epsilon = config.epsilon or 10e-8
-    local lambda = config.lambda or 10e-8
+    local lambda = config.lambda or 1-10e-8
 
     -- (1) evaluate f(x) and df/dx
     local fx, dfdx = opfunc(x)
