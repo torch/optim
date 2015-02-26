@@ -11,7 +11,7 @@ ARGS:
 - 'config.beta2'             : second moment coefficient
 - 'config.epsilon'           : for numerical stability
 - 'config.lambda'            : first moment decay
-- 'state = {t, m, v}'        : a table describing the state of the optimizer; after each
+- 'state'                    : a table describing the state of the optimizer; after each
                               call the state is modified
 
 RETURN:
@@ -24,31 +24,40 @@ function optim.adam(opfunc, x, config, state)
     -- (0) get/update state
     local config = config or {}
     local state = state or config
-    local lr = config.learningRate or 2e-6
+    local lr = config.learningRate or 2e-4
 
     local beta1 = config.beta1 or 0.1
     local beta2 = config.beta2 or 0.001
-    local epsilon = config.epsilon or 10e-8
-    local lambda = config.lambda or 1-10e-8
+    local epsilon = config.epsilon or 1e-8
+    local lambda = config.lambda or 1-1e-8
 
     -- (1) evaluate f(x) and df/dx
     local fx, dfdx = opfunc(x)
 
-    state.t = state.t or 1 -- evaluation counter
-    state.m = state.m or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0) -- Initialize first moment vector
-    state.v = state.v or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0) -- Initialize second moment vector
+    -- Initialization
+    state.t = state.t or 0
+    -- Exponential moving average of gradient values
+    state.m = state.m or x.new(dfdx:size()):zero()
+    -- Exponential moving average of squared gradient values
+    state.v = state.v or x.new(dfdx:size()):zero()
+    -- A tmp tensor to hold the sqrt(v) + epsilon
+    state.denom = state.denom or x.new(dfdx:size()):zero()
 
-    local bt1 = 1 - (1-beta1)*torch.pow(lambda,state.t-1) -- Decay the first moment running average coefficient
-    state.m = torch.add(torch.mul(dfdx, bt1), torch.mul(state.m, 1-bt1)) -- Update biased first moment estimate
-    state.v = torch.add(torch.mul(torch.pow(dfdx, 2), beta2), torch.mul(state.v, 1-beta2)) -- Update biased second raw moment estimate
-
-    local update = torch.cmul(state.m, torch.pow(torch.add(torch.pow(state.v, 2), epsilon),-1))
-    update:mul(lr * torch.sqrt(1-torch.pow((1-beta2),2)) * torch.pow(1-torch.pow((1-beta1),2), -1)) -- compute final update
-    
-    -- (2) update x and evaluation counter
-    x:add(-update)
     state.t = state.t + 1
+    -- Decay the first moment running average coefficient
+    local bt1 = 1 - (1 - beta1) * lambda^(state.t - 1)
+
+    state.m:mul(1 - bt1):add(bt1, dfdx)
+    state.v:mul(1 - beta2):addcmul(beta2, dfdx, dfdx)
+
+    state.denom:copy(state.v):sqrt():add(epsilon)
+
+    local biasCorrection1 = 1 - (1 - beta1)^state.t
+    local biasCorrection2 = 1 - (1 - beta2)^state.t
+    local stepSize = lr * math.sqrt(biasCorrection2)/biasCorrection1
+    -- (2) update x
+    x:addcdiv(-stepSize, state.m, state.denom)
 
     -- return x*, f(x) before optimization
-    return x,{fx}, update
+    return x, {fx}
 end
