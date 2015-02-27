@@ -7,7 +7,7 @@ require 'l2'
 x = torch.Tensor(2):fill(0)
 fx = {}
 
-config = {learningRate=1e-2}
+config = {learningRate=0.002}
 for i = 1,10001 do
 	x,f=optim.adam(rosenbrock,x,config)
 	if (i-1)%1000 == 0 then
