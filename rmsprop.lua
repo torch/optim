@@ -12,7 +12,7 @@ ARGS:
 - 'config.epsilon2'          : stablisation to prevent mean square going to zero
 - 'config.max_gain'          : stabilisation to prevent lr multiplier exploding
 - 'config.min_gain'          : stabilisation to prevent lr multiplier exploding
-- 'state = {m}'              : a table describing the state of the optimizer; after each
+- 'state = {m, dfdx_sq}'     : a table describing the state of the optimizer; after each
                               call the state is modified
 
 RETURN:
@@ -35,14 +35,14 @@ function optim.rmsprop(opfunc, x, config, state)
     -- (1) evaluate f(x) and df/dx
     local fx, dfdx = opfunc(x)
 
-    -- (2) initialize mean square values
+    -- (2) initialize mean square values and square gradient storage
     state.m = state.m or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(epsilon)
+    state.dfdx_sq = state.dfdx_sq or torch.Tensor():typeAs(dfdx):resizeAs(dfdx)
 
-    -- (3) calculate new mean squared value
-    local dfdx_sq = dfdx:clone()
-    local dfdx_sq = dfdx_sq:cmul(dfdx_sq)
+    -- (3) calculate new mean squared values
+    torch.cmul(state.dfdx_sq, dfdx, dfdx)
     state.m:mul(alpha)
-    state.m:add(dfdx_sq:mul(1.0-alpha))
+    state.m:add(state.dfdx_sq:mul(1.0-alpha))
     state.m:add(epsilon2)
 
     -- (4) perform update
