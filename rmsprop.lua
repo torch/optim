@@ -10,6 +10,8 @@ ARGS:
 - 'config.alpha'             : smoothing constant
 - 'config.epsilon'           : value with which to inistialise m
 - 'config.epsilon2'          : stablisation to prevent mean square going to zero
+- 'config.max_gain'          : stabilisation to prevent lr multiplier exploding
+- 'config.min_gain'          : stabilisation to prevent lr multiplier exploding
 - 'state = {m}'              : a table describing the state of the optimizer; after each
                               call the state is modified
 
@@ -27,6 +29,8 @@ function optim.rmsprop(opfunc, x, config, state)
     local alpha = config.alpha or 0.998
     local epsilon = config.epsilon or 1e-8
     local epsilon2 = config.epsilon2 or 1e-4
+    local max_gain = config.max_gain or 100
+    local min_gain = config.min_gain or 1e-8
 
     -- (1) evaluate f(x) and df/dx
     local fx, dfdx = opfunc(x)
@@ -42,7 +46,8 @@ function optim.rmsprop(opfunc, x, config, state)
     state.m:add(epsilon2)
 
     -- (4) perform update
-    local one_over_rms = torch.pow(state.m,-0.5)
+    local one_over_rms = torch.pow(state.m, -0.5)
+    one_over_rms:clamp(min_gain, max_gain)
     local update = torch.cmul(torch.mul(dfdx,lr), one_over_rms)
     x:add(-update)
 
