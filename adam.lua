@@ -47,7 +47,7 @@ function optim.adam(opfunc, x, config, state)
     -- Decay the first moment running average coefficient
     local bt1 = 1 - beta1 * lambda^(state.t - 1)
 
-    state.m:mul(bt1):add(bt1, dfdx)
+    state.m:mul(bt1):add(1-bt1, dfdx)
     state.v:mul(beta2):addcmul(1-beta2, dfdx, dfdx)
 
     state.denom:copy(state.v):sqrt():add(epsilon)
