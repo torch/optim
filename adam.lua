@@ -56,7 +56,7 @@ function optim.adam(opfunc, x, config, state)
     local biasCorrection2 = 1 - beta2^state.t
     local stepSize = lr * math.sqrt(biasCorrection2)/biasCorrection1
     -- (2) update x
-    x:addcdiv(stepSize, state.m, state.denom)
+    x:addcdiv(-stepSize, state.m, state.denom)
 
     -- return x*, f(x) before optimization
     return x, {fx}
