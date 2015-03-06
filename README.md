@@ -1,47 +1,23 @@
-Optim: an optimization package for Torch7
-=========================================
+# Optimization package
 
-Requirements
-------------
-
-* Torch7 (www.torch.ch)
-
-Installation
-------------
-
-* Install Torch7 (refer to its own documentation).
-* Use `torch-rocks` to install optim:
-
-```
-torch-rocks install optim
-```
-
-or from these sources:
-
-```
-cd optim;
-torch-rocks make optim-1.0.3-0.rockspec
-```
-
-Info
-----
-
-This package contains several optimization routines for Torch7.
-
+This package contains several optimization routines for [Torch](https://github.com/torch/torch7/blob/master/README.md).
 Each optimization algorithm is based on the same interface:
 
+```lua
 x*, {f}, ... = optim.method(func, x, state)
+```
 
-with:
+where:
 
-* func  : a user-defined closure that respects this API: f,df/dx = func(x)
-* x     : the current parameter vector (a 1d torch tensor)
-* state : a table of parameters, and state variables, dependent upon the algorithm
-* x*    : the new parameter vector that minimizes f, x* = argmin_x f(x)
-* {f}   : a table of all f values, in the order they've been evaluated
-          (for some simple algorithms, like SGD, #f == 1)
+* `func`: a user-defined closure that respects this API: `f, df/dx = func(x)`
+* `x`: the current parameter vector (a 1D `torch.Tensor`)
+* `state`: a table of parameters, and state variables, dependent upon the algorithm
+* `x*`: the new parameter vector that minimizes `f, x* = argmin_x f(x)`
+* `{f}`: a table of all f values, in the order they've been evaluated (for some simple algorithms, like SGD, `#f == 1`)
 
-Important Note: the state table is used to hold the state of the algorihtm.
+## Important Note
+
+The state table is used to hold the state of the algorihtm.
 It's usually initialized once, by the user, and then passed to the optim function
 as a black box. Example:
 
