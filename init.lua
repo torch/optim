@@ -11,6 +11,7 @@ torch.include('optim', 'nag.lua')
 torch.include('optim', 'fista.lua')
 torch.include('optim', 'lbfgs.lua')
 torch.include('optim', 'adagrad.lua')
+torch.include('optim', 'adadelta.lua')
 torch.include('optim', 'rprop.lua')
 torch.include('optim', 'adam.lua')
 
