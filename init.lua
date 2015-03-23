@@ -13,6 +13,7 @@ torch.include('optim', 'lbfgs.lua')
 torch.include('optim', 'adagrad.lua')
 torch.include('optim', 'rprop.lua')
 torch.include('optim', 'adam.lua')
+torch.include('optim', 'rmsprop.lua')
 
 -- line search functions
 torch.include('optim', 'lswolfe.lua')

@@ -25,11 +25,11 @@ function optim.rmsprop(opfunc, x, config, state)
     -- (0) get/update state
     local config = config or {}
     local state = state or config
-    local lr = config.learningRate or 1e-3
+    local lr = config.learningRate or 1e-4
     local alpha = config.alpha or 0.998
     local epsilon = config.epsilon or 1e-8
-    local epsilon2 = config.epsilon2 or 1e-4
-    local max_gain = config.max_gain or 100
+    local epsilon2 = config.epsilon2 or 1e-8
+    local max_gain = config.max_gain or 1000
     local min_gain = config.min_gain or 1e-8
 
     -- (1) evaluate f(x) and df/dx
@@ -37,21 +37,17 @@ function optim.rmsprop(opfunc, x, config, state)
 
     -- (2) initialize mean square values and square gradient storage
     state.m = state.m or torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(epsilon)
-    state.dfdx_sq = state.dfdx_sq or torch.Tensor():typeAs(dfdx):resizeAs(dfdx)
+    state.tmp = state.tmp or x.new(dfdx:size()):zero()
 
     -- (3) calculate new mean squared values
-    torch.cmul(state.dfdx_sq, dfdx, dfdx)
     state.m:mul(alpha)
-    state.m:add(state.dfdx_sq:mul(1.0-alpha))
-    state.m:add(epsilon2)
+    state.m:addcmul(1.0-alpha,dfdx,dfdx):add(epsilon2)
 
     -- (4) perform update
-    local one_over_rms = torch.pow(state.m, -0.5)
-    one_over_rms:clamp(min_gain, max_gain)
-    local update = torch.cmul(torch.mul(dfdx,lr), one_over_rms)
-    x:add(-update)
+    state.tmp:copy(state.m):pow(-0.5):clamp(min_gain, max_gain)
+    x:add(-lr, state.tmp)
 
     -- return x*, f(x) before optimization
-    return x, {fx}, update
+    return x, {fx}, state.tmp
 end
 
