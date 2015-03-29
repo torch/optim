@@ -32,14 +32,14 @@ function optim.adadelta(opfunc, x, config, state)
     if not state.paramVariance then
         state.paramVariance = torch.Tensor():typeAs(x):resizeAs(dfdx):zero()
         state.paramStd = torch.Tensor():typeAs(x):resizeAs(dfdx):zero()
-        state.rmsDelta = torch.Tensor():typeAs(x):resizeAs(dfdx):zero()
+        state.delta = torch.Tensor():typeAs(x):resizeAs(dfdx):zero()
         state.accDelta = torch.Tensor():typeAs(x):resizeAs(dfdx):zero()
     end
     state.paramVariance:mul(rho):addcmul(1-rho,dfdx,dfdx)
     state.paramStd:resizeAs(state.paramVariance):copy(state.paramVariance):add(eps):sqrt()
-    state.rmsDelta:copy(state.accDelta):add(eps):sqrt():cdiv(state.paramStd):cmul(dfdx)
-    x:add(-1, state.rmsDelta)
-    state.accDelta:mul(rho):addcmul(1-rho, state.rmsDelta, state.rmsDelta)
+    state.delta:resizeAs(state.paramVariance):copy(state.accDelta):add(eps):sqrt():cdiv(state.paramStd):cmul(dfdx)
+    x:add(-1, state.delta)
+    state.accDelta:mul(rho):addcmul(1-rho, state.delta, state.delta)
     -- (3) update evaluation counter
     state.evalCounter = state.evalCounter + 1
 
