@@ -41,21 +41,18 @@ function optim.adadelta(opfunc, x, config, state)
 
     state.accSquaredGradsWithDecay:mul(decay):addcmul(1.0 - decay, dfdx, dfdx)
 
-    local prev_rms_delta = torch.Tensor()
-        :typeAs(state.accSquaredDeltaWithDecay)
-        :resizeAs(state.accSquaredDeltaWithDecay)
-        :zero()
-        :add(state.accSquaredDeltaWithDecay)
-        :add(eps)
-        :sqrt()
-    local rms_grad = torch.Tensor()
-        :typeAs(state.accSquaredGradsWithDecay)
-        :resizeAs(state.accSquaredGradsWithDecay)
-        :zero()
-        :add(state.accSquaredGradsWithDecay)
-        :add(eps)
-        :sqrt()    
-    local delta = prev_rms_delta:cdiv(rms_grad):cmul(dfdx):mul(-1.0)
+    if not state.prev_rms_delta then
+        state.prev_rms_delta = torch.Tensor()
+            :typeAs(state.accSquaredDeltaWithDecay)
+            :resizeAs(state.accSquaredDeltaWithDecay)
+        state.rms_grad = torch.Tensor()
+            :typeAs(state.accSquaredGradsWithDecay)
+            :resizeAs(state.accSquaredGradsWithDecay)
+    end
+
+    state.prev_rms_delta:copy(state.accSquaredDeltaWithDecay):add(eps):sqrt()
+    state.rms_grad:copy(state.accSquaredGradsWithDecay):add(eps):sqrt()    
+    local delta = state.prev_rms_delta:cdiv(state.rms_grad):cmul(dfdx):mul(-1.0)
 
     state.accSquaredDeltaWithDecay:mul(decay):addcmul(1.0 - decay, delta, delta)
 
