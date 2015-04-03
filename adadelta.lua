@@ -17,6 +17,10 @@
     - `state.accSquaredGradsWithDecay`
                : vector of accumulated squared gradients from previous steps
     with corresponding decay rate
+    - `state.rmsDelta`
+              : buffer for computing RMS for sqaured deltas
+    - `state.rmsGrad`
+              : buffer for computing RMS for squared grads
     RETURN:
     - `x`     : the new x vector
     - `f(x)`  : the function, evaluated before the update
@@ -33,30 +37,21 @@ function optim.adadelta(opfunc, x, config, state)
     local fx, dfdx = opfunc(x)
 
     if not state.accSquaredDeltaWithDecay then
-        state.accSquaredDeltaWithDecay =
-            torch.Tensor():typeAs(x):resizeAs(x):zero()
-        state.accSquaredGradsWithDecay =
-            torch.Tensor():typeAs(dfdx):resizeAs(dfdx):zero()
+        state.accSquaredDeltaWithDecay = torch.Tensor():typeAs(dfdx):resizeAs(dfdx):zero()
+        state.accSquaredGradsWithDecay = torch.Tensor():typeAs(dfdx):resizeAs(dfdx):zero()
+        state.rmsGrad = torch.Tensor():typeAs(dfdx):resizeAs(dfdx)
+        state.rmsDelta = torch.Tensor():typeAs(dfdx):resizeAs(dfdx)
     end
 
     state.accSquaredGradsWithDecay:mul(decay):addcmul(1.0 - decay, dfdx, dfdx)
 
-    if not state.prev_rms_delta then
-        state.prev_rms_delta = torch.Tensor()
-            :typeAs(state.accSquaredDeltaWithDecay)
-            :resizeAs(state.accSquaredDeltaWithDecay)
-        state.rms_grad = torch.Tensor()
-            :typeAs(state.accSquaredGradsWithDecay)
-            :resizeAs(state.accSquaredGradsWithDecay)
-    end
+    state.rmsGrad:copy(state.accSquaredDeltaWithDecay):add(eps):sqrt()
+    state.rmsDelta:copy(state.accSquaredGradsWithDecay):add(eps):sqrt()
 
-    state.prev_rms_delta:copy(state.accSquaredDeltaWithDecay):add(eps):sqrt()
-    state.rms_grad:copy(state.accSquaredGradsWithDecay):add(eps):sqrt()    
-    local delta = state.prev_rms_delta:cdiv(state.rms_grad):cmul(dfdx):mul(-1.0)
+    local delta = state.rmsGrad:cdiv(state.rmsDelta):cmul(dfdx):mul(-1.0)
 
     state.accSquaredDeltaWithDecay:mul(decay):addcmul(1.0 - decay, delta, delta)
 
     x:add(delta)
-
     return x, {fx}
 end
