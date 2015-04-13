@@ -1,13 +1,13 @@
 require 'torch'
 require 'optim'
-require 'adadelta'
+
 require 'rosenbrock'
 require 'l2'
 
 x = torch.Tensor(2):fill(0)
 fx = {}
 state = {}
-config = {p=0.9, eps=1e-8, learningRate=1e-3}
+config = {eps=1e-10}
 for i = 1,10001 do
 	x,f=optim.adadelta(rosenbrock,x,config,state)
 	if (i-1)%1000 == 0 then
