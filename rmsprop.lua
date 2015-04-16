@@ -38,7 +38,7 @@ function optim.rmsprop(opfunc, x, config, state)
     state.m:addcmul(1.0-alpha,dfdx,dfdx)
 
     -- (4) perform update
-    state.tmp:copy(state.m):sqrt()
+    state.tmp:sqrt(state.m)
     x:addcdiv(-lr, dfdx, state.tmp:add(epsilon))
 
     -- return x*, f(x) before optimization
