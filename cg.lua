@@ -54,9 +54,9 @@ function optim.cg(opfunc, x, config, state)
    local d1,d2,d3 = 0,0,0
    local f1,f2,f3 = 0,0,0
 
-   local df1 = state.df1 or torch.Tensor()
-   local df2 = state.df2 or torch.Tensor()
-   local df3 = state.df3 or torch.Tensor()
+   local df1 = state.df1 or x.new()
+   local df2 = state.df2 or x.new()
+   local df3 = state.df3 or x.new()
    local tdf
 
    df1:resizeAs(x)
@@ -64,13 +64,13 @@ function optim.cg(opfunc, x, config, state)
    df3:resizeAs(x)
 
    -- search direction
-   local s = state.s or torch.Tensor()
+   local s = state.s or x.new()
    s:resizeAs(x)
 
    -- we need a temp storage for X
-   local x0 = state.x0 or torch.Tensor()
+   local x0 = state.x0 or x.new()
    local f0 = 0
-   local df0 = state.df0 or torch.Tensor()
+   local df0 = state.df0 or x.new()
    x0:resizeAs(x)
    df0:resizeAs(x)
 
