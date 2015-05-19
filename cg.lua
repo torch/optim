@@ -42,11 +42,6 @@ function optim.cg(opfunc, x, config, state)
    local ratio = config.ratio or 100
    local maxEval = config.maxEval or maxIter*1.25
    local red = 1
-   local cuda = torch.typename(x) == 'torch.CudaTensor'
-   local function newTensor()
-      if cuda then return torch.CudaTensor() end
-      return torch.Tensor()
-   end
 
    local verbose = config.verbose or 0
 
@@ -59,9 +54,9 @@ function optim.cg(opfunc, x, config, state)
    local d1,d2,d3 = 0,0,0
    local f1,f2,f3 = 0,0,0
 
-   local df1 = state.df1 or newTensor()
-   local df2 = state.df2 or newTensor()
-   local df3 = state.df3 or newTensor()
+   local df1 = state.df1 or x.new()
+   local df2 = state.df2 or x.new()
+   local df3 = state.df3 or x.new()
    local tdf
 
    df1:resizeAs(x)
@@ -69,13 +64,13 @@ function optim.cg(opfunc, x, config, state)
    df3:resizeAs(x)
 
    -- search direction
-   local s = state.s or newTensor()
+   local s = state.s or x.new()
    s:resizeAs(x)
 
    -- we need a temp storage for X
-   local x0 = state.x0 or newTensor()
+   local x0 = state.x0 or x.new()
    local f0 = 0
-   local df0 = state.df0 or newTensor()
+   local df0 = state.df0 or x.new()
    x0:resizeAs(x)
    df0:resizeAs(x)
 
