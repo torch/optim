@@ -35,7 +35,7 @@ local Logger = torch.class('optim.Logger')
 function Logger:__init(filename, timestamp)
    if filename then
       self.name = filename
-      os.execute('mkdir -p "' .. paths.dirname(filename) .. '"')
+      os.execute('mkdir ' .. (sys.uname() ~= 'windows' and '-p ' or '') .. ' "' .. paths.dirname(filename) .. '"')
       if timestamp then
          -- append timestamp to create unique log file
          filename = filename .. '-'..os.date("%Y_%m_%d_%X")
