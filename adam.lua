@@ -10,7 +10,6 @@ ARGS:
 - 'config.beta1'             : first moment coefficient
 - 'config.beta2'             : second moment coefficient
 - 'config.epsilon'           : for numerical stability
-- 'config.lambda'            : first moment decay
 - 'state'                    : a table describing the state of the optimizer; after each
                               call the state is modified
 
@@ -29,7 +28,6 @@ function optim.adam(opfunc, x, config, state)
     local beta1 = config.beta1 or 0.9
     local beta2 = config.beta2 or 0.999
     local epsilon = config.epsilon or 1e-8
-    local lambda = config.lambda or 1-1e-8
 
     -- (1) evaluate f(x) and df/dx
     local fx, dfdx = opfunc(x)
@@ -44,10 +42,9 @@ function optim.adam(opfunc, x, config, state)
     state.denom = state.denom or x.new(dfdx:size()):zero()
 
     state.t = state.t + 1
-    -- Decay the first moment running average coefficient
-    local bt1 = beta1 * lambda^(state.t - 1)
-
-    state.m:mul(bt1):add(1-bt1, dfdx)
+    
+    -- Decay the first and second moment running average coefficient
+    state.m:mul(beta1):add(1-beta1, dfdx)
     state.v:mul(beta2):addcmul(1-beta2, dfdx, dfdx)
 
     state.denom:copy(state.v):sqrt():add(epsilon)
