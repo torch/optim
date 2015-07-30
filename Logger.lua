@@ -54,6 +54,8 @@ function Logger:__init(filename, timestamp)
    self.idx = {}
    self.figure = nil
    self.showPlot = true
+   self.plotRawCmd = nil
+   self.defaultStyle = '+'
 end
 
 function Logger:setNames(names)
@@ -63,7 +65,7 @@ function Logger:setNames(names)
    for k,key in pairs(names) do
       self.file:write(key .. '\t')
       self.symbols[k] = {}
-      self.styles[k] = {'+'}
+      self.styles[k] = {self.defaultStyle}
       self.idx[key] = k
    end
    self.file:write('\n')
@@ -78,7 +80,7 @@ function Logger:add(symbols)
       for k,val in pairs(symbols) do
          self.file:write(k .. '\t')
          self.symbols[k] = {}
-         self.styles[k] = {'+'}
+         self.styles[k] = {self.defaultStyle}
          self.names[k] = k
       end
       self.idx = self.names
@@ -152,6 +154,7 @@ function Logger:plot(...)
       if self.showPlot then
          self.figure = gnuplot.figure(self.figure)
          gnuplot.plot(plots)
+         if self.plotRawCmd then gnuplot.raw(self.plotRawCmd) end
          gnuplot.grid('on')
          gnuplot.title('<Logger::' .. self.name .. '>')
       end
@@ -159,6 +162,7 @@ function Logger:plot(...)
          os.execute('rm -f "' .. self.epsfile .. '"')
          local epsfig = gnuplot.epsfigure(self.epsfile)
          gnuplot.plot(plots)
+         if self.plotRawCmd then gnuplot.raw(self.plotRawCmd) end
          gnuplot.grid('on')
          gnuplot.title('<Logger::' .. self.name .. '>')
          gnuplot.plotflush()
