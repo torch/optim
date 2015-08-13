@@ -26,3 +26,5 @@ torch.include('optim', 'checkgrad.lua')
 -- tools
 torch.include('optim', 'ConfusionMatrix.lua')
 torch.include('optim', 'Logger.lua')
+
+return optim
