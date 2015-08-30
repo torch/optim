@@ -1,0 +1,8 @@
+site_name: optim
+theme : simplex
+repo_url : https://github.com/torch/optim
+use_directory_urls : false
+markdown_extensions: [extra]
+docs_dir : doc
+pages:
+- [index.md, Optim]
