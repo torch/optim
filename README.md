@@ -17,7 +17,7 @@ where:
 
 ## Important Note
 
-The state table is used to hold the state of the algorihtm.
+The state table is used to hold the state of the algorithm.
 It's usually initialized once, by the user, and then passed to the optim function
 as a black box. Example:
 
