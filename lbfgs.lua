@@ -78,12 +78,15 @@ function optim.lbfgs(opfunc, x, config, state)
       return x,f_hist
    end
 
-   -- reusable buffers for y's and s's, and their histories
-   state.dir_bufs = state.dir_bufs or g.new(nCorrection+1, p):split(1)
-   state.stp_bufs = state.stp_bufs or g.new(nCorrection+1, p):split(1)
-   for i=1,#state.dir_bufs do
-      state.dir_bufs[i] = state.dir_bufs[i]:squeeze(1)
-      state.stp_bufs[i] = state.stp_bufs[i]:squeeze(1)
+   if not state.dir_bufs then
+      -- reusable buffers for y's and s's, and their histories
+      verbose('creating recyclable direction/step/history buffers')
+      state.dir_bufs = state.dir_bufs or g.new(nCorrection+1, p):split(1)
+      state.stp_bufs = state.stp_bufs or g.new(nCorrection+1, p):split(1)
+      for i=1,#state.dir_bufs do
+         state.dir_bufs[i] = state.dir_bufs[i]:squeeze(1)
+         state.stp_bufs[i] = state.stp_bufs[i]:squeeze(1)
+      end
    end
 
    -- variables cached in state (for tracing)
