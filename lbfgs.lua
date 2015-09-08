@@ -114,8 +114,8 @@ function optim.lbfgs(opfunc, x, config, state)
          -- do lbfgs update (update memory)
          local y = table.remove(state.dir_bufs)  -- pop
          local s = table.remove(state.stp_bufs)
-         y:copy(g):add(-1, g_old)  -- g - g_old
-         s:copy(d):mul(t)          -- d*t
+         y:add(g, -1, g_old)  -- g - g_old
+         s:mul(d, t)          -- d*t
          local ys = y:dot(s)  -- y*s
          if ys > 1e-10 then
             -- updating memory
@@ -154,7 +154,7 @@ function optim.lbfgs(opfunc, x, config, state)
          -- need to be accessed element-by-element, so don't re-type tensor:
          state.al = state.al or torch.zeros(nCorrection) local al = state.al
 
-         q:copy(g):mul(-1)  -- -g
+         q:mul(g, -1)  -- -g
          for i = k,1,-1 do
             al[i] = old_dirs[i]:dot(q) * ro[i]
             q:add(-al[i], old_stps[i])
@@ -162,7 +162,7 @@ function optim.lbfgs(opfunc, x, config, state)
 
          -- multiply by initial Hessian
          r = d  -- share the same buffer, since we don't need the old d
-         r:copy(q):mul(Hdiag)  -- q[1] * Hdiag
+         r:mul(q, Hdiag)  -- q[1] * Hdiag
          for i = 1,k do
             local be_i = old_stps[i]:dot(r) * ro[i]
             r:add(al[i]-be_i, old_dirs[i])
