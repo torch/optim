@@ -17,7 +17,7 @@ function ConfusionMatrix:__init(nclasses, classes)
       classes = nclasses
       nclasses = #classes
    end
-   self.mat = torch.FloatTensor(nclasses,nclasses):zero()
+   self.mat = torch.LongTensor(nclasses,nclasses):zero()
    self.valids = torch.FloatTensor(nclasses):zero()
    self.unionvalids = torch.FloatTensor(nclasses):zero()
    self.nclasses = nclasses
@@ -226,7 +226,7 @@ end
 
 function ConfusionMatrix:render(sortmode, display, block, legendwidth)
    -- args
-   local confusion = self.mat
+   local confusion = self.mat:double()
    local classes = self.classes
    local sortmode = sortmode or 'score' -- 'score' or 'occurrence'
    local block = block or 25
