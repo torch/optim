@@ -8,7 +8,7 @@ ARGS:
 - 'config` : a table with configuration parameters for the optimizer
 - 'config.learningRate'      : learning rate
 - 'config.alpha'             : smoothing constant
-- 'config.epsilon'           : value with which to inistialise m
+- 'config.epsilon'           : value with which to initialise m
 - 'state'                    : a table describing the state of the optimizer;
                                after each call the state is modified
 - 'state.m'                  : leaky sum of squares of parameter gradients,
