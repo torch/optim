@@ -49,6 +49,13 @@ function optim.rprop(opfunc, x, config, state)
             state.nsign    = torch.ByteTensor(dfdx:size())
             state.zsign    = torch.ByteTensor(dfdx:size())
             state.dminmax  = torch.ByteTensor(dfdx:size())
+			if torch.type(x)=='torch.CudaTensor' then
+				-- Push to GPU
+				state.psign    = state.psign:cuda()
+				state.nsign    = state.nsign:cuda()
+				state.zsign    = state.zsign:cuda()
+				state.dminmax  = state.dminmax:cuda()
+			end
         end
 
         -- sign of derivative from last step to this one
