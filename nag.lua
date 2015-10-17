@@ -59,12 +59,12 @@ function optim.nag(opfunc, x, config, state)
    local clr = lr / (1 + nevals*lrd)
 
    -- (4) apply momentum
+   if not state.dfdx then
+      state.dfdx = torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0)
+   end
+
    if mom ~= 0 then
-      if not state.dfdx then
-         state.dfdx = torch.Tensor():typeAs(dfdx):resizeAs(dfdx):fill(0)
-      else
-         state.dfdx:mul(mom)
-      end
+      state.dfdx:mul(mom)
    end
 
    -- (5) parameter update with single or individual learning rates
