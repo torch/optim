@@ -193,6 +193,8 @@ function ConfusionMatrix:__tostring__()
    local str = {'ConfusionMatrix:\n'}
    local nclasses = self.nclasses
    table.insert(str, '[')
+   local maxCnt = self.mat:max()
+   local nDigits = math.max(8, 1 + math.ceil(math.log10(maxCnt)))
    for t = 1,nclasses do
       local pclass = self.valids[t] * 100
       pclass = string.format('%2.3f', pclass)
@@ -202,7 +204,7 @@ function ConfusionMatrix:__tostring__()
          table.insert(str, ' [')
       end
       for p = 1,nclasses do
-         table.insert(str, string.format('%8d', self.mat[t][p]))
+         table.insert(str, string.format('%' .. nDigits .. 'd', self.mat[t][p]))
       end
       if self.classes and self.classes[1] then
          if t == nclasses then
