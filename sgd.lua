@@ -13,9 +13,10 @@ ARGS:
 - `config.momentum`          : momentum
 - `config.dampening`         : dampening for momentum
 - `config.nesterov`          : enables Nesterov momentum
+- `config.learningRates`     : vector of individual learning rates
 - `state`  : a table describing the state of the optimizer; after each
              call the state is modified
-- `state.learningRates`      : vector of individual learning rates
+- `state.evalCounter`        : evaluation counter (optional: 0, by default)
 
 RETURN:
 - `x`     : the new x vector
