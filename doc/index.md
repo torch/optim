@@ -13,6 +13,14 @@ For now, the following algorithms are provided:
   * [Averaged Stochastic Gradient Descent](#optim.asgd)
   * [L-BFGS](#optim.lbfgs)
   * [Congugate Gradients](#optim.cg)
+  * [AdaDelta](#optim.adadelta)
+  * [AdaGrad](#optim.adagrad)
+  * [Adam](#optim.adam)
+  * [AdaMax](#optim.adamax)
+  * [FISTA with backtracking line search](#optim.FistaLS)
+  * [Nesterov's Accelerated Gradient method](#optim.nag)
+  * [RMSprop](#optim.rmsprop)
+  * [Rprop](#optim.rprop)
 
 All these algorithms are designed to support batch optimization as
 well as stochastic optimization. It's up to the user to construct an 
@@ -26,15 +34,15 @@ a function (L-BFGS), whereas others only support a learning rate (SGD).
 ## Overview 
 
 This package contains several optimization routines for [Torch](https://github.com/torch/torch7/blob/master/README.md).
-Each optimization algorithm is based on the same interface:
+Most optimization algorithms has the following interface:
 
 ```lua
-x*, {f}, ... = optim.method(func, x, state)
+x*, {f}, ... = optim.method(opfunc, x, state)
 ```
 
 where:
 
-* `func`: a user-defined closure that respects this API: `f, df/dx = func(x)`
+* `opfunc`: a user-defined closure that respects this API: `f, df/dx = func(x)`
 * `x`: the current parameter vector (a 1D `torch.Tensor`)
 * `state`: a table of parameters, and state variables, dependent upon the algorithm
 * `x*`: the new parameter vector that minimizes `f, x* = argmin_x f(x)`
@@ -65,24 +73,24 @@ end
 <a name='optim.algorithms'></a>
 ## Algorithms
 
-All the algorithms provided rely on a unified interface:
+Most algorithms provided rely on a unified interface:
 ```lua
-w_new,fs = optim.method(func,w,state)
+x_new,fs = optim.method(opfunc, x, state)
 ```
 where: 
-w is the trainable/adjustable parameter vector,
+x is the trainable/adjustable parameter vector,
 state contains both options for the algorithm and the state of the algorihtm,
-func is a closure that has the following interface:
+opfunc is a closure that has the following interface:
 ```lua
-f,df_dw = func(w)
+f,df_dx = opfunc(x)
 ```
-w_new is the new parameter vector (after optimization),
+x_new is the new parameter vector (after optimization),
 fs is a a table containing all the values of the objective, as evaluated during
 the optimization procedure: fs[1] is the value before optimization, and fs[#fs]
 is the most optimized one (the lowest).
 
 <a name='optim.sgd'></a>
-### [x] sgd(func, w, state) 
+### [x] sgd(opfunc, x, state) 
 
 An implementation of Stochastic Gradient Descent (SGD).
 
@@ -107,7 +115,7 @@ Returns :
   * `f(x)`  : the function, evaluated before the update
 
 <a name='optim.asgd'></a>
-### [x] asgd(func, w, state) 
+### [x] asgd(opfunc, x, state) 
 
 An implementation of Averaged Stochastic Gradient Descent (ASGD): 
 
@@ -137,7 +145,7 @@ Returns:
 
 
 <a name='optim.lbfgs'></a>
-### [x] lbfgs(func, w, state)
+### [x] lbfgs(opfunc, x, state)
 
 An implementation of L-BFGS that relies on a user-provided line
 search function (`state.lineSearch`). If this function is not
@@ -170,7 +178,7 @@ Returns :
 
 
 <a name='optim.cg'></a>
-### [x] cg(func, w, state)
+### [x] cg(opfunc, x, state)
 
 An implementation of the Conjugate Gradient method which is a rewrite of 
 `minimize.m` written by Carl E. Rasmussen. 
@@ -202,4 +210,172 @@ Returns :
    * `f[1]` is the value of the function before any optimization and
    * `f[#f]` is the final fully optimized value, at x*
 
+<a name='optim.adadelta'></a>
+### [x] adadelta(opfunc, x, config, state)
+ADADELTA implementation for SGD http://arxiv.org/abs/1212.5701
 
+Arguments :
+
+* `opfunc` : a function that takes a single input (X), the point of evaluation, and returns f(X) and df/dX
+* `x` : the initial point
+* `config` : a table of hyper-parameters
+* `config.rho` : interpolation parameter
+* `config.eps` : for numerical stability
+* `state` : a table describing the state of the optimizer; after each call the state is modified
+* `state.paramVariance` : vector of temporal variances of parameters
+* `state.accDelta` : vector of accummulated delta of gradients
+
+Returns :
+
+* `x` : the new x vector
+* `f(x)` : the function, evaluated before the update
+
+<a name='optim.adagrad'></a>
+### [x] adagrad(opfunc, x, config, state)
+AdaGrad implementation for SGD
+
+Arguments :
+
+* `opfunc` : a function that takes a single input (X), the point of evaluation, and returns f(X) and df/dX
+* `x` : the initial point
+* `state` : a table describing the state of the optimizer; after each call the state is modified
+* `state.learningRate` : learning rate
+* `state.paramVariance` : vector of temporal variances of parameters
+
+Returns :
+
+* `x` : the new x vector
+* `f(x)` : the function, evaluated before the update
+
+<a name='optim.adam'></a>
+### [x] adam(opfunc, x, config, state)
+An implementation of Adam from http://arxiv.org/pdf/1412.6980.pdf
+
+Arguments :
+
+* `opfunc` : a function that takes a single input (X), the point of a evaluation, and returns f(X) and df/dX
+* `x`      : the initial point
+* `config` : a table with configuration parameters for the optimizer
+* `config.learningRate`      : learning rate
+* `config.beta1`             : first moment coefficient
+* `config.beta2`             : second moment coefficient
+* `config.epsilon`           : for numerical stability
+* `state`                    : a table describing the state of the optimizer; after each call the state is modified
+
+Returns :
+
+* `x`     : the new x vector
+* `f(x)`  : the function, evaluated before the update
+
+<a name='optim.adamax'></a>
+### [x] adamax(opfunc, x, config, state)
+An implementation of AdaMax http://arxiv.org/pdf/1412.6980.pdf
+
+Arguments :
+
+* `opfunc` : a function that takes a single input (X), the point of a evaluation, and returns f(X) and df/dX
+* `x`      : the initial point
+* `config` : a table with configuration parameters for the optimizer
+* `config.learningRate`      : learning rate
+* `config.beta1`             : first moment coefficient
+* `config.beta2`             : second moment coefficient
+* `config.epsilon`           : for numerical stability
+* `state`                    : a table describing the state of the optimizer; after each call the state is modified.
+
+Returns :
+
+* `x`     : the new x vector
+* `f(x)`  : the function, evaluated before the update
+
+<a name='optim.FistaLS'></a>
+### [x] FistaLS(f, g, pl, xinit, params)
+FISTA with backtracking line search
+* `f`        : smooth function
+* `g`        : non-smooth function
+* `pl`       : minimizer of intermediate problem Q(x,y)
+* `xinit`    : initial point
+* `params`   : table of parameters (**optional**)
+* `params.L`       : 1/(step size) for ISTA/FISTA iteration (0.1)
+* `params.Lstep`   : step size multiplier at each iteration (1.5)
+* `params.maxiter` : max number of iterations (50)
+* `params.maxline` : max number of line search iterations per iteration (20)
+* `params.errthres`: Error thershold for convergence check (1e-4)
+* `params.doFistaUpdate` : true : use FISTA, false: use ISTA (true)
+* `params.verbose` : store each iteration solution and print detailed info (false)
+
+On output, `params` will contain these additional fields that can be reused.
+* `params.L`       : last used L value will be written.
+
+These are temporary storages needed by the algo and if the same params object is 
+passed a second time, these same storages will be used without new allocation.
+* `params.xkm`     : previous iterarion point
+* `params.y`       : fista iteration
+* `params.ply`     : ply = pl(y * 1/L grad(f))
+
+Returns the solution x and history of {function evals, number of line search ,...}
+
+Algorithm is published in http://epubs.siam.org/doi/abs/10.1137/080716542
+
+<a name='optim.nag'></a>
+### [x] nag(opfunc, x, config, state)      
+An implementation of SGD adapted with features of Nesterov's 
+Accelerated Gradient method, based on the paper "On the Importance of Initialization and Momentum in Deep Learning" (Sutsveker et. al., ICML 2013).
+
+Arguments :
+
+*  `opfunc` : a function that takes a single input (X), the point of evaluation, and returns f(X) and df/dX
+*  `x` : the initial point
+*  `state`  : a table describing the state of the optimizer; after each call the state is modified
+*  `state.learningRate`      : learning rate
+*  `state.learningRateDecay` : learning rate decay
+*  `astate.weightDecay`       : weight decay
+*  `state.momentum`          : momentum
+*  `state.learningRates`     : vector of individual learning rates
+
+Returns :
+
+* `x`     : the new x vector
+* `f(x)` : the function, evaluated before the update
+
+<a name='optim.rmsprop'></a>
+### [x] rmsprop(opfunc, x, config, state)
+An implementation of RMSprop
+
+Arguments :
+
+* `opfunc` : a function that takes a single input (X), the point of a evaluation, and returns f(X) and df/dX
+* `x`      : the initial point
+* `config` : a table with configuration parameters for the optimizer
+* `config.learningRate`      : learning rate
+* `config.alpha`             : smoothing constant
+* `config.epsilon`           : value with which to initialise m
+* `state`                    : a table describing the state of the optimizer; after each call the state is modified
+* `state.m`                  : leaky sum of squares of parameter gradients,
+* `state.tmp`                : and the square root (with epsilon smoothing)
+
+Returns :
+
+* `x`     : the new x vector
+* `f(x)`  : the function, evaluated before the update
+
+<a name='optim.rprop'></a>
+### [x] rprop(opfunc, x, config, state)
+A plain implementation of Rprop
+(Martin Riedmiller, Koray Kavukcuoglu 2013)
+
+Arguments :
+
+* `opfunc` : a function that takes a single input (X), the point of evaluation, and returns f(X) and df/dX
+* `x`      : the initial point
+* `state`  : a table describing the state of the optimizer; after each call the state is modified
+* `state.stepsize`    : initial step size, common to all components
+* `state.etaplus`     : multiplicative increase factor, > 1 (default 1.2)
+* `state.etaminus`    : multiplicative decrease factor, < 1 (default 0.5)
+* `state.stepsizemax` : maximum stepsize allowed (default 50)
+* `state.stepsizemin` : minimum stepsize allowed (default 1e-6)
+* `state.niter`       : number of iterations (default 1)
+
+Returns :
+
+* `x`     : the new x vector
+* `f(x)`  : the function, evaluated before the update
