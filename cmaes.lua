@@ -36,26 +36,26 @@ RETURN:
      `f[#f]` is the final fully optimized value, at `x*`
 --]]
 function optim.cmaes(opfunc, x, config, state)
-  -- process input parameters
-  local config = config or {}
-  local state = state or config
-  local xmean = torch.Tensor(x:clone():double():storage()) -- distribution mean, a flattened copy
-  N = xmean:size(1)  -- number of objective variables/problem dimension
-  local sigma = state.sigma -- coordinate wise standard deviation (step size)
-  local ftarget = state.ftarget -- stop if fitness < ftarget
-  local maxEval = tonumber(state.maxEval) or 1e3*N^2
-  local objfunc = opfunc
-  local verb_disp = state.verb_disp -- display step size
-  local min_iterations = state.min_iterations or 1
+   -- process input parameters
+   local config = config or {}
+   local state = state or config
+   local xmean = torch.Tensor(x:clone():double():storage()) -- distribution mean, a flattened copy
+   N = xmean:size(1)  -- number of objective variables/problem dimension
+   local sigma = state.sigma -- coordinate wise standard deviation (step size)
+   local ftarget = state.ftarget -- stop if fitness < ftarget
+   local maxEval = tonumber(state.maxEval) or 1e3*N^2
+   local objfunc = opfunc
+   local verb_disp = state.verb_disp -- display step size
+   local min_iterations = state.min_iterations or 1
 
-  local lambda = state.popsize -- population size, offspring number
-  -- Strategy parameter setting: Selection  
-  if state.popsize == nil then
-    lambda = 4 + math.floor(3 * math.log(N))
-  end
+   local lambda = state.popsize -- population size, offspring number
+   -- Strategy parameter setting: Selection  
+   if state.popsize == nil then
+     lambda = 4 + math.floor(3 * math.log(N))
+   end
 
-  local mu = lambda / 2  -- number of parents/points for recombination
-  local weights = torch.range(0,mu-1):apply(function(i) 
+   local mu = lambda / 2  -- number of parents/points for recombination
+   local weights = torch.range(0,mu-1):apply(function(i) 
       return math.log(mu+0.5) - math.log(i+1)  end) -- recombination weights
     weights:div(weights:sum())  -- normalize recombination weights array
     local mueff = weights:sum()^2 / torch.pow(weights,2):sum()  -- variance-effectiveness of sum w_i x_i
@@ -68,7 +68,6 @@ function optim.cmaes(opfunc, x, config, state)
     local damps = 2 * mueff/lambda + 0.3 + cs  -- damping for sigma, usually close to 1
 
     -- Initialize dynamic (internal) state variables 
-    --local pc, ps = N * [0], N * [0]  -- evolution paths for C,sigma
     local pc = torch.Tensor(N):zero() -- evolution paths for C
     local ps = torch.Tensor(N):zero() -- evolution paths for sigma
     local B = torch.eye(N)   -- B defines the coordinate system 
@@ -98,7 +97,7 @@ function optim.cmaes(opfunc, x, config, state)
       res = torch.Tensor(lambda,D:size(1))
       for k=1,lambda do --repeat lambda times
         z = D:clone()
-        z:apply(function(d) return d * torch.normal(0,1) end) --randn[k]
+        z:apply(function(d) return d * torch.normal(0,1) end)
         res[{k,{}}] = torch.add(xmean, (B * z) * sigma)
       end
 
@@ -168,7 +167,7 @@ function optim.cmaes(opfunc, x, config, state)
       local function stop() 
         --[[return satisfied termination conditions in a table like 
         {'termination reason':value, ...}, for example {'tolfun':1e-12}, 
-        or the empty dict {}--]] 
+        or the empty table {}--]] 
         res = {}
         if counteval > 0 then
           if counteval >= maxEval then
@@ -236,7 +235,7 @@ function optim.cmaes(opfunc, x, config, state)
         print('best f-value =', f)
         print('solution = ')
         print(bestmu)
-        print('best found at iterations: ', c/lambda, ' , total iterations: ', iteration)
+        print('best found at iteration: ', c/lambda, ' , total iterations: ', iteration)
       end
       table.insert(f_hist, f)
 
