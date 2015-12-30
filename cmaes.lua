@@ -74,7 +74,8 @@ function optim.cmaes(opfunc, x, config, state)
    local invsqrtC = torch.eye(N)  -- C^-1/2 
    local eigeneval = 0      -- tracking the update of B and D
    local counteval = 0
-   local f_hist = {opfunc(x)}  -- for bookkeeping output and termination
+   local f_hist = {[1]=opfunc(x)}  -- for bookkeeping output and termination
+   local fitvals = torch.Tensor(lambda)-- fitness values
    local best = BestSolution.new(nil,nil,counteval)
    local iteration = 0 -- iteration of the optimize loop
 
@@ -92,10 +93,9 @@ function optim.cmaes(opfunc, x, config, state)
          D = torch.sqrt(D)  -- D contains standard deviations now
          invsqrtC = B * torch.diag(torch.pow(D,-1)) * B:t()
       end
-      res = torch.Tensor(lambda,D:size(1))
+      local res = torch.Tensor(lambda,D:size(1))
       for k=1,lambda do --repeat lambda times
-         z = D:clone()
-         z:apply(function(d) return d * torch.normal(0,1) end)
+         local z = D:clone():normal(0,1):cmul(D)
          res[{k,{}}] = torch.add(xmean, (B * z) * sigma)
       end
 
@@ -103,7 +103,7 @@ function optim.cmaes(opfunc, x, config, state)
    end
 
 
-   local function tell(arx, _fitvals)
+   local function tell(arx)
       --[[update the evolution paths and the distribution parameters m,
       sigma, and C within CMA-ES.
 
@@ -114,16 +114,15 @@ function optim.cmaes(opfunc, x, config, state)
             `fitvals` 
                   the corresponding objective function values --]]
       -- bookkeeping, preparation
-      counteval = counteval + _fitvals:size(1)  -- slightly artificial to do here
-      N = xmean:size(1)             -- convenience short cuts
-      local iN = torch.range(1,N)
+      counteval = counteval + lambda  -- slightly artificial to do here
       local xold = xmean:clone()
 
       -- Sort by fitness and compute weighted mean into xmean
-      fitvals, arindex = torch.sort(_fitvals)
-      arx = arx:index(1, arindex[{{1, mu}}]) -- sorted arx
+      local arindex = nil --sorted indices
+      fitvals, arindex = torch.sort(fitvals)
+      arx = arx:index(1, arindex[{{1, mu}}]) -- sorted candidate solutions
 
-      table.insert(f_hist, fitvals[1])
+      table.insert(f_hist, fitvals[1]) --append best fitness to history
       best:update(arx[1], fitvals[1], counteval)
 
       xmean:zero()
@@ -139,7 +138,7 @@ function optim.cmaes(opfunc, x, config, state)
          (1-(1-cs)^(2*counteval/lambda)) / N  < 2 + 4./(N+1))
       hsig = hsig and 1.0 or 0.0 --use binary numbers
 
-      local c = (cc * (2-cc) * mueff)^0.5 / sigma
+      c = (cc * (2-cc) * mueff)^0.5 / sigma
       pc = pc - pc * cc + y * c * hsig -- exponential decay on pc
 
       -- Adapt covariance matrix C
@@ -149,8 +148,8 @@ function optim.cmaes(opfunc, x, config, state)
          for j=1,N do
             local r = torch.range(1,mu)
             r:apply(function(k) 
-                  return weights[k] * (arx[k][i]-xold[i]) * (arx[k][j]-xold[j]) end)
-            Cmuij = torch.sum(r) / sigma^2  -- rank-mu update
+               return weights[k] * (arx[k][i]-xold[i]) * (arx[k][j]-xold[j]) end)
+            local Cmuij = torch.sum(r) / sigma^2  -- rank-mu update
             C[i][j] = C[i][j] + ((-c1a - cmu) * C[i][j] + 
                   c1 * pc[i]*pc[j] + cmu * Cmuij)
             end
@@ -159,14 +158,13 @@ function optim.cmaes(opfunc, x, config, state)
          -- Adapt step-size sigma with factor <= exp(0.6) \approx 1.82
          sigma = sigma * math.exp(math.min(0.6, 
                (cs / damps) * (torch.sum(torch.pow(ps,2))/N - 1)/2))
-
-      end
+   end
 
    local function stop() 
       --[[return satisfied termination conditions in a table like 
       {'termination reason':value, ...}, for example {'tolfun':1e-12}, 
       or the empty table {}--]] 
-      res = {}
+      local res = {}
       if counteval > 0 then
          if counteval >= maxEval then
             res['evals'] = maxEval
@@ -211,22 +209,22 @@ function optim.cmaes(opfunc, x, config, state)
    while next(stop()) == nil or iteration < min_iterations do
       iteration = iteration + 1
 
-      local X = ask()         -- deliver candidate solutions
-      local _fitvals = torch.Tensor(X:size(1))
-      for i=1, _fitvals:size(1) do
+      local X = ask() -- deliver candidate solutions
+      for i=1, lambda do
+         -- put candidate tensor back in input shape and evaluate in opfunc
          local candidate = torch.Tensor(X[i]:clone():storage(),1,x:size()):typeAs(x)
-         _fitvals[i] = objfunc(candidate)
+         fitvals[i] = objfunc(candidate)
       end
 
-      tell(X, _fitvals) 
+      tell(X) 
       disp(verb_disp)
    end
+
+   local bestmu, f, c = best:get()
    if verb_disp > 0 then
       for k, v in pairs(stop()) do
          print('termination by', k, '=', v)
       end
-
-      bestmu, f, c   = best:get()
       print('best f-value =', f)
       print('solution = ')
       print(bestmu)
@@ -239,30 +237,26 @@ end
 
 
 
-   BestSolution.__index = BestSolution 
-   function BestSolution.new(x, f, evals)
-      local self = setmetatable({}, BestSolution)
-      self.x = x
-      self.f = f
+BestSolution.__index = BestSolution 
+function BestSolution.new(x, f, evals)
+   local self = setmetatable({}, BestSolution)
+   self.x = x
+   self.f = f
+   self.evals = evals
+   return self
+end
+
+function BestSolution.update(self, arx, arf, evals)
+   --[[initialize the best solution with `x`, `f`, and `evals`.
+      Better solutions have smaller `f`-values.--]]
+   if self.f == nil or arf < self.f then
+      self.x = arx:clone()
+      self.f = arf
       self.evals = evals
-      return self
    end
+   return self
+end
 
-   function BestSolution.update(self, arx, arf, evals)
-      --[[initialize the best solution with `x`, `f`, and `evals`.
-         Better solutions have smaller `f`-values.--]]
-      if self.f == nil or arf < self.f then
-         self.x = arx:clone()
-         self.f = arf
-         if self.evals == nil then
-            self.evals = nil
-         else
-            self.evals = evals
-         end
-      end
-      return self
-   end
-
-   function BestSolution.get(self)
-      return self.x, self.f, self.evals
-   end
+function BestSolution.get(self)
+   return self.x, self.f, self.evals
+end
