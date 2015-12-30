@@ -400,8 +400,7 @@ Arguments:
 * `state.ftarget`   : float, target function value
 * `state.popsize`   : population size. If this is left empty, 4 + int(3 * log(|x|)) will be used
 * `state.ftarget`   : stop if fitness < ftarget
-* `state.verd_disp` : display info on console every verb_disp iteration, 0 for never
-* `state.args`      : optional arguments to `opfunc`
+* `state.verb_disp` : display info on console every verb_disp iteration, 0 for never
 
 Returns:
 * `x*` : the new `x` vector, at the optimal point
