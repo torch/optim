@@ -34,10 +34,13 @@ RETURN:
        `f[#f]` is the final fully optimized value, at `x*`
 --]]
 function optim.cmaes(opfunc, x, config, state)
+   if  (x.triu == nil or x.diag == nil) then
+      error('Unsupported Tensor ' .. x:type() .. " please use Float- or DoubleTensor for x")
+   end
    -- process input parameters
    local config = config or {}
    local state = state or config
-   local xmean = torch.Tensor(x:clone():double():storage()) -- distribution mean, a flattened copy
+   local xmean = x:clone():view(-1) -- distribution mean, a flattened copy
    local N = xmean:size(1)  -- number of objective variables/problem dimension
    local sigma = state.sigma -- coordinate wise standard deviation (step size)
    local ftarget = state.ftarget -- stop if fitness < ftarget
@@ -57,6 +60,7 @@ function optim.cmaes(opfunc, x, config, state)
        return math.log(mu+0.5) - math.log(i+1)  end) -- recombination weights
    weights:div(weights:sum())  -- normalize recombination weights array
    local mueff = weights:sum()^2 / torch.pow(weights,2):sum()  -- variance-effectiveness of sum w_i x_i
+   weights = weights:typeAs(x)
 
    -- Strategy parameter setting: Adaptation
    local cc = (4 + mueff/N) / (N+4 + 2 * mueff/N)  -- time constant for cumulation for C
@@ -66,12 +70,17 @@ function optim.cmaes(opfunc, x, config, state)
    local damps = 2 * mueff/lambda + 0.3 + cs  -- damping for sigma, usually close to 1
 
    -- Initialize dynamic (internal) state variables 
-   local pc = torch.Tensor(N):zero() -- evolution paths for C
-   local ps = torch.Tensor(N):zero() -- evolution paths for sigma
-   local B = torch.eye(N)   -- B defines the coordinate system 
-   local D = torch.Tensor(N):fill(1)  -- diagonal D defines the scaling
-   local C = torch.eye(N)   -- covariance matrix 
-   local invsqrtC = torch.eye(N)  -- C^-1/2 
+   local pc = torch.Tensor(N):zero():typeAs(x) -- evolution paths for C
+   local ps = torch.Tensor(N):zero():typeAs(x) -- evolution paths for sigma
+   local B = torch.eye(N):typeAs(x)   -- B defines the coordinate system 
+   local D = torch.Tensor(N):fill(1):typeAs(x)  -- diagonal D defines the scaling
+   local C = torch.eye(N):typeAs(x)   -- covariance matrix 
+   if not pcall(function () torch.symeig(C,'V') end) then -- if error occurs trying to use symeig
+      error('torch.symeig not available for ' .. x:type() .. 
+         " please use Float- or DoubleTensor for x")
+   end
+   local candidates = torch.Tensor(lambda,N):typeAs(x)
+   local invsqrtC = torch.eye(N):typeAs(x)  -- C^-1/2 
    local eigeneval = 0      -- tracking the update of B and D
    local counteval = 0
    local f_hist = {[1]=opfunc(x)}  -- for bookkeeping output and termination
@@ -91,15 +100,14 @@ function optim.cmaes(opfunc, x, config, state)
          C = torch.triu(C) + torch.triu(C,1):t() -- enforce symmetry
          D, B = torch.symeig(C,'V') -- eigen decomposition, B==normalized eigenvectors, O(N^3)
          D = torch.sqrt(D)  -- D contains standard deviations now
-         invsqrtC = B * torch.diag(torch.pow(D,-1)) * B:t()
+         invsqrtC = (B * torch.diag(torch.pow(D,-1)) * B:t())
       end
-      local res = torch.Tensor(lambda,D:size(1))
       for k=1,lambda do --repeat lambda times
          local z = D:clone():normal(0,1):cmul(D)
-         res[{k,{}}] = torch.add(xmean, (B * z) * sigma)
+         candidates[{k,{}}] = torch.add(xmean, (B * z) * sigma)
       end
 
-      return res
+      return candidates
    end
 
 
@@ -212,7 +220,7 @@ function optim.cmaes(opfunc, x, config, state)
       local X = ask() -- deliver candidate solutions
       for i=1, lambda do
          -- put candidate tensor back in input shape and evaluate in opfunc
-         local candidate = torch.Tensor(X[i]:clone():storage(),1,x:size()):typeAs(x)
+         local candidate = X[i]:viewAs(x)
          fitvals[i] = objfunc(candidate)
       end
 
