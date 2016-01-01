@@ -21,6 +21,7 @@ For now, the following algorithms are provided:
   * [Nesterov's Accelerated Gradient method](#optim.nag)
   * [RMSprop](#optim.rmsprop)
   * [Rprop](#optim.rprop)
+  * [CMAES](#optim.cmaes)
 
 All these algorithms are designed to support batch optimization as
 well as stochastic optimization. It's up to the user to construct an 
@@ -379,3 +380,30 @@ Returns :
 
 * `x`     : the new x vector
 * `f(x)`  : the function, evaluated before the update
+
+
+
+ 
+<a name='optim.cmaes'></a>
+### [x] cmaes(opfunc, x, config, state)
+An implementation of `CMAES` (Covariance Matrix Adaptation Evolution Strategy), 
+ported from https://www.lri.fr/~hansen/barecmaes2.html.
+
+CMAES is a stochastic, derivative-free method for heuristic global optimization of non-linear or non-convex continuous optimization problems. Note that this method will on average take much more function evaluations to converge then a gradient based method.
+
+Arguments:
+
+* `opfunc` : a function that takes a single input (X), the point of evaluation, and returns f(X) and df/dX. Note that df/dX is not used and can be left 0
+* `x` : the initial point
+* `state.sigma`     : float, initial step-size (standard deviation in each coordinate)
+* `state.maxEval`   : int, maximal number of function evaluations
+* `state.ftarget`   : float, target function value
+* `state.popsize`   : population size. If this is left empty, 4 + int(3 * log(|x|)) will be used
+* `state.ftarget`   : stop if fitness < ftarget
+* `state.verb_disp` : display info on console every verb_disp iteration, 0 for never
+
+Returns:
+* `x*` : the new `x` vector, at the optimal point
+* `f`  : a table of all function values: 
+  * `f[1]` is the value of the function before any optimization and
+  * `f[#f]` is the final fully optimized value, at `x*`

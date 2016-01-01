@@ -16,6 +16,7 @@ torch.include('optim', 'adam.lua')
 torch.include('optim', 'adamax.lua')
 torch.include('optim', 'rmsprop.lua')
 torch.include('optim', 'adadelta.lua')
+torch.include('optim', 'cmaes.lua')
 
 -- line search functions
 torch.include('optim', 'lswolfe.lua')
