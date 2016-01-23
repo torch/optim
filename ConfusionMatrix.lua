@@ -38,7 +38,7 @@ function ConfusionMatrix:_add(p, t)
    assert(t and type(t) == 'number')
    -- non-positive values are considered missing
    -- and therefore ignored
-   if t > 0 then 
+   if t > 0 then
       self.mat[t][p] = self.mat[t][p] + 1
    end
 end
@@ -83,7 +83,7 @@ function ConfusionMatrix:batchAdd(predictions, targets)
    else
       error("predictions has invalid number of dimensions")
    end
-      
+
    self._target:resize(targets:size()):copy(targets)
    if targets:dim() == 1 then
       -- targets is a vector of classes
@@ -100,7 +100,7 @@ function ConfusionMatrix:batchAdd(predictions, targets)
    else
       error("targets has invalid number of dimensions")
    end
-   
+
    --loop over each pair of indices
    for i = 1,preds:size(1) do
       self:_add(preds[i], targs[i])
@@ -188,13 +188,21 @@ function ConfusionMatrix:farFrr()
    return self._classFrrs, self._classFars, returnFrrs, returnFars
 end
 
+local function log10(n)
+   if math.log10 then
+      return math.log10(n)
+   else
+      return math.log(n) / math.log(10)
+   end
+end
+
 function ConfusionMatrix:__tostring__()
    self:updateValids()
    local str = {'ConfusionMatrix:\n'}
    local nclasses = self.nclasses
    table.insert(str, '[')
    local maxCnt = self.mat:max()
-   local nDigits = math.max(8, 1 + math.ceil(math.log10(maxCnt)))
+   local nDigits = math.max(8, 1 + math.ceil(log10(maxCnt)))
    for t = 1,nclasses do
       local pclass = self.valids[t] * 100
       pclass = string.format('%2.3f', pclass)
@@ -305,7 +313,7 @@ function ConfusionMatrix:render(sortmode, display, block, legendwidth)
       win1:setcolor{r=0,g=0,b=0}
       win1:rectangle((#render)[2],(i-1)*block,legendwidth,block)
       win1:fill()
-      
+
       -- %
       win1:setfont(qt.QFont{serif=false, size=fontsize})
       local gscale = freqs[order[i]]/freqs:max()*0.9+0.1 --3/4
