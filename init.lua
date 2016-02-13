@@ -4,29 +4,29 @@ require 'torch'
 optim = {}
 
 -- optimizations
-torch.include('optim', 'sgd.lua')
-torch.include('optim', 'cg.lua')
-torch.include('optim', 'asgd.lua')
-torch.include('optim', 'nag.lua')
-torch.include('optim', 'fista.lua')
-torch.include('optim', 'lbfgs.lua')
-torch.include('optim', 'adagrad.lua')
-torch.include('optim', 'rprop.lua')
-torch.include('optim', 'adam.lua')
-torch.include('optim', 'adamax.lua')
-torch.include('optim', 'rmsprop.lua')
-torch.include('optim', 'adadelta.lua')
-torch.include('optim', 'cmaes.lua')
+require('optim.sgd')
+require('optim.cg')
+require('optim.asgd')
+require('optim.nag')
+require('optim.fista')
+require('optim.lbfgs')
+require('optim.adagrad')
+require('optim.rprop')
+require('optim.adam')
+require('optim.adamax')
+require('optim.rmsprop')
+require('optim.adadelta')
+require('optim.cmaes')
 
 -- line search functions
-torch.include('optim', 'lswolfe.lua')
+require('optim.lswolfe')
 
 -- helpers
-torch.include('optim', 'polyinterp.lua')
-torch.include('optim', 'checkgrad.lua')
+require('optim.polyinterp')
+require('optim.checkgrad')
 
 -- tools
-torch.include('optim', 'ConfusionMatrix.lua')
-torch.include('optim', 'Logger.lua')
+require('optim.ConfusionMatrix')
+require('optim.Logger')
 
 return optim
