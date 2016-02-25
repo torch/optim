@@ -19,7 +19,9 @@ where:
 ## Available algorithms
 
 Please check [this file](doc/index.md) for the full list of
-optimization algorithms available and examples. 
+optimization algorithms available and examples. Get also into the
+[`test`](test/) directory for straightforward examples using the
+[Rosenbrock's](test/rosenbrock.lua) function.
 
 ## Important Note
 
