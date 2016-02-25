@@ -13,7 +13,13 @@ where:
 * `x`: the current parameter vector (a 1D `torch.Tensor`)
 * `state`: a table of parameters, and state variables, dependent upon the algorithm
 * `x*`: the new parameter vector that minimizes `f, x* = argmin_x f(x)`
-* `{f}`: a table of all f values, in the order they've been evaluated (for some simple algorithms, like SGD, `#f == 1`)
+* `{f}`: a table of all f values, in the order they've been evaluated
+  (for some simple algorithms, like SGD, `#f == 1`)
+
+## Available algorithms
+
+Please check [this file](doc/index.md) for the full list of
+optimization algorithms available and examples. 
 
 ## Important Note
 
