@@ -25,7 +25,7 @@ function optim.checkgrad(opfunc, x, eps)
     
     -- compute numeric approximations to gradient:
     local eps = eps or 1e-7
-    local dC_est = torch.DoubleTensor(dC:size())
+    local dC_est = torch.Tensor():typeAs(dC):resizeAs(dC)
     for i = 1,dC:size(1) do
       x[i] = x[i] + eps
       local C1 = opfunc(x)
