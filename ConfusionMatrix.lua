@@ -25,6 +25,7 @@ function ConfusionMatrix:__init(nclasses, classes)
    self.averageValid = 0
    self.classes = classes or {}
    -- buffers
+   self._mat_flat = self.mat:view(-1)
    self._target = torch.FloatTensor()
    self._prediction = torch.FloatTensor()
    self._max = torch.FloatTensor()
@@ -101,10 +102,17 @@ function ConfusionMatrix:batchAdd(predictions, targets)
       error("targets has invalid number of dimensions")
    end
 
-   --loop over each pair of indices
-   for i = 1,preds:size(1) do
-      self:_add(preds[i], targs[i])
-   end
+   -- non-positive values are considered missing and therefore ignored
+   local mask = targs:ge(1)
+   targs = targs[mask]
+   preds = preds[mask]
+
+   self._mat_flat = self._mat_flat or self.mat:view(-1) -- for backward compatibility
+
+   assert(self.mat:isContiguous() and self.mat:stride(2) == 1)
+   local indices = ((targs - 1) * self.mat:stride(1) + preds):typeAs(self.mat)
+   local ones = torch.ones(1):typeAs(self.mat):expand(indices:size(1))
+   self._mat_flat:indexAdd(1, indices, ones)
 end
 
 function ConfusionMatrix:zero()
