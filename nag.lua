@@ -42,11 +42,7 @@ function optim.nag(opfunc, x, config, state)
 
    -- (1) evaluate f(x) and df/dx
    -- first step in the direction of the momentum vector
-   if not state.x_copy then
-      state.x_copy = x:clone()
-   else
-      state.x_copy:resizeAs(x):copy(x)
-   end
+
    if state.dfdx then
       x:add(mom, state.dfdx) 
    end
@@ -75,12 +71,12 @@ function optim.nag(opfunc, x, config, state)
          state.deltaParameters = torch.Tensor():typeAs(x):resizeAs(dfdx)
       end
       state.deltaParameters:copy(lrs):cmul(dfdx)
+      x:add(-clr, state.deltaParameters)
       state.dfdx:add(-clr, state.deltaParameters)
    else
+      x:add(-clr, dfdx)
       state.dfdx:add(-clr, dfdx)
    end
-   state.x_copy:add(state.dfdx)
-   x:copy(state.x_copy)
 
    -- (6) update evaluation counter
    state.evalCounter = state.evalCounter + 1
