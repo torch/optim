@@ -109,6 +109,8 @@ function ConfusionMatrix:batchAdd(predictions, targets)
 
    self._mat_flat = self._mat_flat or self.mat:view(-1) -- for backward compatibility
 
+   preds = preds:typeAs(targs)
+
    assert(self.mat:isContiguous() and self.mat:stride(2) == 1)
    local indices = ((targs - 1) * self.mat:stride(1) + preds):typeAs(self.mat)
    local ones = torch.ones(1):typeAs(self.mat):expand(indices:size(1))
