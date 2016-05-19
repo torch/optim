@@ -7,6 +7,7 @@ ARGS:
 - `config` : a table of hyper-parameters
 - `config.rho` : interpolation parameter
 - `config.eps` : for numerical stability
+- `config.weightDecay` : weight decay
 - `state` : a table describing the state of the optimizer; after each
          call the state is modified
 - `state.paramVariance` : vector of temporal variances of parameters
@@ -24,11 +25,17 @@ function optim.adadelta(opfunc, x, config, state)
     local state = state or config
     local rho = config.rho or 0.9
     local eps = config.eps or 1e-6
+    local wd = config.weightDecay or 0
     state.evalCounter = state.evalCounter or 0
     -- (1) evaluate f(x) and df/dx
     local fx,dfdx = opfunc(x)
 
-    -- (2) parameter update
+    -- (2) weight decay
+    if wd ~= 0 then
+      dfdx:add(wd, x)
+    end
+
+    -- (3) parameter update
     if not state.paramVariance then
         state.paramVariance = torch.Tensor():typeAs(x):resizeAs(dfdx):zero()
         state.paramStd = torch.Tensor():typeAs(x):resizeAs(dfdx):zero()
@@ -40,7 +47,7 @@ function optim.adadelta(opfunc, x, config, state)
     state.delta:resizeAs(state.paramVariance):copy(state.accDelta):add(eps):sqrt():cdiv(state.paramStd):cmul(dfdx)
     x:add(-1, state.delta)
     state.accDelta:mul(rho):addcmul(1-rho, state.delta, state.delta)
-    -- (3) update evaluation counter
+    -- (4) update evaluation counter
     state.evalCounter = state.evalCounter + 1
 
     -- return x*, f(x) before optimization
