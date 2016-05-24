@@ -18,10 +18,6 @@ RETURN:
 --]]
 
 require 'torch'
-require 'optim'
-
-require 'rosenbrock'
-require 'l2'
 
 function optim.de(opfunc, x, config, state)
 	-- process input parameters
