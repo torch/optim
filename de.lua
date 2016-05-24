@@ -30,8 +30,7 @@ function optim.de(opfunc, x, config, state)
 	local maxRegion = config.maxRegion			-- upper bound of search region
 	local minRegion = config.minRegion			-- lower bound of search region
 	local xmean = x:clone():view(-1) 			-- distribution mean, a flattened copy
-	local D = xmean:size(1)  					-- number of objective variables/problem dimension
-
+	local D = xmean:size(1)  					-- number of objective variables/problem dimension 
 
 	if config.popsize == nil then
     	popsize = 10*D
@@ -44,13 +43,14 @@ function optim.de(opfunc, x, config, state)
    	end
 
    	-- Initialize population 
-
+   	local fx = torch.Tensor(maxFEs)
    	local pop = torch.Tensor(popsize,D)
    	local children = torch.Tensor(popsize,D)
    	local fitness = torch.Tensor(popsize)
    	local children_fitness = torch.Tensor(popsize)
-   	local fes = 0	-- number of function evaluations
+   	local fes = 1	-- number of function evaluations
    	local best_fitness
+   	local best_solution = torch.Tensor(D)
 
 	-- Initialize population and evaluate the its fitness value
    	local gen = torch.Generator()
@@ -60,20 +60,25 @@ function optim.de(opfunc, x, config, state)
    			pop[i][j] = torch.uniform(gen, minRegion, maxRegion)
    		end
    		fitness[i] = opfunc(pop[i])
+   		fx[fes] = fitness[i]
    		fes = fes + 1
    	end
-   	
+
    	-- Find the best solution
    	best_fitness = fitness[1]
+   	local index = 1
    	for i=2,popsize do
    		if best_fitness > fitness[i] then
    			best_fitness = fitness[i]
+   			index = i
    		end
    	end
-
+   	for i=1,D do
+   		best_solution[i] = pop[index][i]
+   	end
    	-- Main loop
    	while fes < maxFEs do
-   		local  r1, r2, r3
+   		local  r1, r2
    		for i=1,popsize do
    			repeat
    				r1 = torch.uniform(gen, 1, popsize)
@@ -81,18 +86,17 @@ function optim.de(opfunc, x, config, state)
    			repeat
    				r2 = torch.uniform(gen, 1, popsize)
    			until(r2 ~= r1 and r2 ~= i)
-   			repeat
-   				r3 = torch.uniform(gen, 1, popsize)
-   			until(r3 ~= r2 and r3 ~= r1 and r3 ~= i)
-   			local jrand = torch.uniform(gen, 1, D)
+
+   			local jrand = torch.random(gen, 1, D)
    			for j=1,D do
    				if torch.uniform(gen, 0, 1) < crossoverRate or i == jrand then
-   					children[i][j] = pop[r1][j] + scaleFactor * (pop[r2][j] - pop[r3][j])
+   					children[i][j] = best_solution[j] + scaleFactor * (pop[r1][j] - pop[r2][j])
    				else
    					children[i][j] = pop[i][j]
    				end
    			end
    			children_fitness[i] = opfunc(children[i])
+   			fx[fes] = children_fitness[i]
    			fes = fes + 1
    		end
 
@@ -104,9 +108,12 @@ function optim.de(opfunc, x, config, state)
    				fitness[i] = children_fitness[i]
    				if fitness[i] < best_fitness then
    					best_fitness = fitness[i]
+   					for j=1,D do
+   						best_solution[j] = children[i][j]
+   					end
    				end
    			end
    		end
    	end
-   	return best_fitness
+   	return best_solution, fx
 end
