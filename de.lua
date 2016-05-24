@@ -114,14 +114,3 @@ function optim.de(opfunc, x, config, state)
    	end
    	return best_fitness
 end
-
--- 10-D rosenbrock
-x = torch.Tensor(10):fill(0)
-config = {popsize=100, scaleFactor=0.5, crossoverRate=0.9, maxFEs=20000}
--- will take some time
-fx=optim.de(rosenbrock,x,config)
-
-print('Rosenbrock test')
-print(fx)
-print()
-print()
