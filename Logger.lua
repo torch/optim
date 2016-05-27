@@ -28,6 +28,11 @@ Example:
 
     logger:style{'-', '-'}                   -- define styles for plots
     logger:plot()                            -- and plot
+
+-----------
+
+    logger:setlogscale(true)                 -- enable logscale on Y-axis
+    logger:plot()                            -- and plot
 ]]
 require 'xlua'
 local Logger = torch.class('optim.Logger')
@@ -56,6 +61,7 @@ function Logger:__init(filename, timestamp)
    self.showPlot = true
    self.plotRawCmd = nil
    self.defaultStyle = '+'
+   self.logscale = false
 end
 
 function Logger:setNames(names)
@@ -116,6 +122,10 @@ function Logger:style(symbols)
    end
 end
 
+function Logger:setlogscale(value)
+   self.logscale = value
+end
+
 function Logger:plot(...)
    if not xlua.require('gnuplot') then
       if not self.warned then
@@ -153,6 +163,7 @@ function Logger:plot(...)
    if plotit then
       if self.showPlot then
          self.figure = gnuplot.figure(self.figure)
+         if self.logscale then gnuplot.logscale('on') end
          gnuplot.plot(plots)
          if self.plotRawCmd then gnuplot.raw(self.plotRawCmd) end
          gnuplot.grid('on')
@@ -161,6 +172,7 @@ function Logger:plot(...)
       if self.epsfile then
          os.execute('rm -f "' .. self.epsfile .. '"')
          local epsfig = gnuplot.epsfigure(self.epsfile)
+         if self.logscale then gnuplot.logscale('on') end
          gnuplot.plot(plots)
          if self.plotRawCmd then gnuplot.raw(self.plotRawCmd) end
          gnuplot.grid('on')
