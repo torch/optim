@@ -69,15 +69,20 @@ function optim.sgd(opfunc, x, config, state)
    end
 
    -- (4) learning rate decay (annealing)
-   local clr = lr / (1 + nevals*lrd)
+   local clr, clrs
+   if lrs then
+      clrs = lrs / (1 + nevals*lrd)
+   else
+      clr = lr / (1 + nevals*lrd)
+   end
    
    -- (5) parameter update with single or individual learning rates
    if lrs then
       if not state.deltaParameters then
          state.deltaParameters = torch.Tensor():typeAs(x):resizeAs(dfdx)
       end
-      state.deltaParameters:copy(lrs):cmul(dfdx)
-      x:add(-clr, state.deltaParameters)
+      state.deltaParameters:copy(clrs):cmul(dfdx)
+      x:add(-state.deltaParameters)
    else
       x:add(-clr, dfdx)
    end
