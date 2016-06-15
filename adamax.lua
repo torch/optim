@@ -28,9 +28,15 @@ function optim.adamax(opfunc, x, config, state)
     local beta1 = config.beta1 or 0.9
     local beta2 = config.beta2 or 0.999
     local epsilon = config.epsilon or 1e-38
+    local wd = config.weightDecay or 0
 
     -- (1) evaluate f(x) and df/dx
     local fx, dfdx = opfunc(x)
+
+    -- (2) weight decay
+    if wd ~= 0 then
+       dfdx:add(wd, x)
+    end
 
     -- Initialization
     state.t = state.t or 0
