@@ -70,7 +70,7 @@ function optim.sgd(opfunc, x, config, state)
 
    -- (4) learning rate decay (annealing)
    local clr = lr / (1 + nevals*lrd)
-   
+
    -- (5) parameter update with single or individual learning rates
    if lrs then
       if not state.deltaParameters then

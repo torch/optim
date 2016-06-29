@@ -20,47 +20,47 @@ RETURN:
 ]]
 
 function optim.adamax(opfunc, x, config, state)
-    -- (0) get/update state
-    local config = config or {}
-    local state = state or config
-    local lr = config.learningRate or 0.002
+   -- (0) get/update state
+   local config = config or {}
+   local state = state or config
+   local lr = config.learningRate or 0.002
 
-    local beta1 = config.beta1 or 0.9
-    local beta2 = config.beta2 or 0.999
-    local epsilon = config.epsilon or 1e-38
-    local wd = config.weightDecay or 0
+   local beta1 = config.beta1 or 0.9
+   local beta2 = config.beta2 or 0.999
+   local epsilon = config.epsilon or 1e-38
+   local wd = config.weightDecay or 0
 
-    -- (1) evaluate f(x) and df/dx
-    local fx, dfdx = opfunc(x)
+   -- (1) evaluate f(x) and df/dx
+   local fx, dfdx = opfunc(x)
 
-    -- (2) weight decay
-    if wd ~= 0 then
-       dfdx:add(wd, x)
-    end
+   -- (2) weight decay
+   if wd ~= 0 then
+      dfdx:add(wd, x)
+   end
 
-    -- Initialization
-    state.t = state.t or 0
-    -- Exponential moving average of gradient values
-    state.m = state.m or x.new(dfdx:size()):zero()
-    -- Exponential moving average of the infinity norm
-    state.u = state.u or x.new(dfdx:size()):zero()
-    -- A tmp tensor to hold the input to max()
-    state.max = state.max or x.new(2, unpack(dfdx:size():totable())):zero()
+   -- Initialization
+   state.t = state.t or 0
+   -- Exponential moving average of gradient values
+   state.m = state.m or x.new(dfdx:size()):zero()
+   -- Exponential moving average of the infinity norm
+   state.u = state.u or x.new(dfdx:size()):zero()
+   -- A tmp tensor to hold the input to max()
+   state.max = state.max or x.new(2, unpack(dfdx:size():totable())):zero()
 
-    state.t = state.t + 1
+   state.t = state.t + 1
 
-    -- Update biased first moment estimate.
-    state.m:mul(beta1):add(1-beta1, dfdx)
-    -- Update the exponentially weighted infinity norm.
-    state.max[1]:copy(state.u):mul(beta2)
-    state.max[2]:copy(dfdx):abs():add(epsilon)
-    state.u:max(state.max, 1)
+   -- Update biased first moment estimate.
+   state.m:mul(beta1):add(1-beta1, dfdx)
+   -- Update the exponentially weighted infinity norm.
+   state.max[1]:copy(state.u):mul(beta2)
+   state.max[2]:copy(dfdx):abs():add(epsilon)
+   state.u:max(state.max, 1)
 
-    local biasCorrection1 = 1 - beta1^state.t
-    local stepSize = lr/biasCorrection1
-    -- (2) update x
-    x:addcdiv(-stepSize, state.m, state.u)
+   local biasCorrection1 = 1 - beta1^state.t
+   local stepSize = lr/biasCorrection1
+   -- (2) update x
+   x:addcdiv(-stepSize, state.m, state.u)
 
-    -- return x*, f(x) before optimization
-    return x, {fx}
+   -- return x*, f(x) before optimization
+   return x, {fx}
 end

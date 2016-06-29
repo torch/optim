@@ -27,7 +27,7 @@ ARGS:
 
 RETURN:
 - `x*` : the new `x` vector, at the optimal point
-- `f`  : a table of all function values: 
+- `f`  : a table of all function values:
      `f[1]` is the value of the function before any optimization and
      `f[#f]` is the final fully optimized value, at `x*`
 
@@ -46,7 +46,7 @@ function optim.lbfgs(opfunc, x, config, state)
    local lineSearchOpts = config.lineSearchOptions
    local learningRate = config.learningRate or 1
    local isverbose = config.verbose or false
-   
+
    state.funcEval = state.funcEval or 0
    state.nIter = state.nIter or 0
 
@@ -142,7 +142,7 @@ function optim.lbfgs(opfunc, x, config, state)
             table.insert(state.stp_bufs, s)
          end
 
-         -- compute the approximate (L-BFGS) inverse Hessian 
+         -- compute the approximate (L-BFGS) inverse Hessian
          -- multiplied by the gradient
          local k = #old_dirs
 
