@@ -25,12 +25,12 @@ Some of these algorithms support a line search, which can be passed as a functio
 General interface:
 
 ```lua
-x*, {f}, ... = optim.method(opfunc, x, state)
+x*, {f}, ... = optim.method(opfunc, x[, config][, state])
 ```
 
 
 <a name='optim.sgd'></a>
-## sgd(opfunc, x, state)
+## sgd(opfunc, x[, config][, state])
 
 An implementation of *Stochastic Gradient Descent* (*SGD*).
 
@@ -56,7 +56,7 @@ Returns:
 
 
 <a name='optim.asgd'></a>
-## asgd(opfunc, x, state)
+## asgd(opfunc, x[, config][, state])
 
 An implementation of *Averaged Stochastic Gradient Descent* (*ASGD*):
 
@@ -72,11 +72,11 @@ Arguments:
 
   * `opfunc`: a function that takes a single input `X`, the point of evaluation, and returns `f(X)` and `df/dX`
   * `x`: the initial point
-  * `state`: a table describing the state of the optimizer; after each call the state is modified
-  * `state.eta0`: learning rate
-  * `state.lambda`: decay term
-  * `state.alpha`: power for eta update
-  * `state.t0`: point at which to start averaging
+  * `config`: a table with configuration parameters for the optimizer
+  * `config.eta0`: learning rate
+  * `config.lambda`: decay term
+  * `config.alpha`: power for eta update
+  * `config.t0`: point at which to start averaging
 
 Returns:
 
@@ -86,7 +86,7 @@ Returns:
 
 
 <a name='optim.lbfgs'></a>
-## lbfgs(opfunc, x, state)
+## lbfgs(opfunc, x[, config][, state])
 
 An implementation of *L-BFGS* that relies on a user-provided line search function (`state.lineSearch`).
 If this function is not provided, then a simple learning rate is used to produce fixed size steps.
@@ -100,13 +100,13 @@ Arguments:
 
   * `opfunc`: a function that takes a single input `X`, the point of evaluation, and returns `f(X)` and `df/dX`
   * `x`: the initial point
-  * `state`: a table describing the state of the optimizer; after each call the state is modified
-  * `state.maxIter`: Maximum number of iterations allowed
-  * `state.maxEval`: Maximum number of function evaluations
-  * `state.tolFun`: Termination tolerance on the first-order optimality
-  * `state.tolX`: Termination tol on progress in terms of func/param changes
-  * `state.lineSearch`: A line search function
-  * `state.learningRate`: If no line search provided, then a fixed step size is used
+  * `config`: a table with configuration parameters for the optimizer
+  * `config.maxIter`: Maximum number of iterations allowed
+  * `config.maxEval`: Maximum number of function evaluations
+  * `config.tolFun`: Termination tolerance on the first-order optimality
+  * `config.tolX`: Termination tol on progress in terms of func/param changes
+  * `config.lineSearch`: A line search function
+  * `config.learningRate`: If no line search provided, then a fixed step size is used
 
 Returns:
   * `x*`: the new `x` vector, at the optimal point
@@ -116,7 +116,7 @@ Returns:
 
 
 <a name='optim.cg'></a>
-## cg(opfunc, x, state)
+## cg(opfunc, x[, config][, state])
 
 An implementation of the *Conjugate Gradient* method which is a rewrite of `minimize.m` written by Carl E. Rasmussen.
 It is supposed to produce exactly same results (give or take numerical accuracy due to some changed order of operations).
@@ -132,11 +132,12 @@ Arguments:
 
   * `opfunc`: a function that takes a single input, the point of evaluation.
   * `x`: the initial point
+  * `config`: a table with configuration parameters for the optimizer
+  * `config.maxEval`: max number of function evaluations
+  * `config.maxIter`: max number of iterations
   * `state`: a table of parameters and temporary allocations.
-  * `state.maxEval`: max number of function evaluations
-  * `state.maxIter`: max number of iterations
-  * `state.df[0, gc, gc, gc]`: if you pass torch.Tensor they will be used for temp storage
-  * `state.[s, gc0]`: if you pass torch.Tensor they will be used for temp storage
+  * `state.df[0, 1, 2, 3]`: if you pass `Tensor` they will be used for temp storage
+  * `state.[s, x0]`: if you pass `Tensor` they will be used for temp storage
 
 Returns:
 
@@ -147,9 +148,9 @@ Returns:
 
 
 <a name='optim.adadelta'></a>
-## adadelta(opfunc, x, config, state)
+## adadelta(opfunc, x[, config][, state])
 
-*AdaDelta* implementation for *SGD* http://arxiv.org/abs/1212.5701
+*AdaDelta* implementation for *SGD* http://arxiv.org/abs/1212.5701.
 
 Arguments:
 
@@ -169,16 +170,17 @@ Returns:
 
 
 <a name='optim.adagrad'></a>
-## adagrad(opfunc, x, config, state)
+## adagrad(opfunc, x[, config][, state])
 
-*AdaGrad* implementation for *SGD*
+*AdaGrad* implementation for *SGD*.
 
 Arguments:
 
-* `opfunc`: a function that takes a single input `X`, the point of evaluation, and returns `f(X)` and `df/dX`
-* `x`: the initial point
-* `state`: a table describing the state of the optimizer; after each call the state is modified
-* `state.learningRate`: learning rate
+  * `opfunc`: a function that takes a single input `X`, the point of evaluation, and returns `f(X)` and `df/dX`
+  * `x`: the initial point
+  * `config`: a table with configuration parameters for the optimizer
+  * `config.learningRate`: learning rate
+  * `state`: a table describing the state of the optimizer; after each call the state is modified
   * `state.paramVariance`: vector of temporal variances of parameters
 
 Returns:
@@ -188,7 +190,7 @@ Returns:
 
 
 <a name='optim.adam'></a>
-## adam(opfunc, x, config, state)
+## adam(opfunc, x[, config][, state])
 
 An implementation of *Adam* from http://arxiv.org/pdf/1412.6980.pdf.
 
@@ -210,9 +212,9 @@ Returns:
 
 
 <a name='optim.adamax'></a>
-## adamax(opfunc, x, config, state)
+## adamax(opfunc, x[, config][, state])
 
-An implementation of *AdaMax* http://arxiv.org/pdf/1412.6980.pdf
+An implementation of *AdaMax* http://arxiv.org/pdf/1412.6980.pdf.
 
 Arguments:
 
@@ -223,7 +225,7 @@ Arguments:
   * `config.beta1`: first moment coefficient
   * `config.beta2`: second moment coefficient
   * `config.epsilon`: for numerical stability
-  * `state`: a table describing the state of the optimizer; after each call the state is modified.
+  * `state`: a table describing the state of the optimizer; after each call the state is modified
 
 Returns:
 
@@ -232,7 +234,7 @@ Returns:
 
 
 <a name='optim.FistaLS'></a>
-## FistaLS(f, g, pl, xinit, params)
+## FistaLS(f, g, pl, xinit[, params])
 
 *Fista* with backtracking *Line Search*:
 
@@ -264,7 +266,7 @@ Algorithm is published in http://epubs.siam.org/doi/abs/10.1137/080716542
 
 
 <a name='optim.nag'></a>
-## nag(opfunc, x, config, state)
+## nag(opfunc, x[, config][, state])
 
 An implementation of *SGD* adapted with features of *Nesterov's Accelerated Gradient method*, based on the paper "On the Importance of Initialization and Momentum in Deep Learning" (Sutsveker et. al., ICML 2013) http://www.cs.toronto.edu/~fritz/absps/momentum.pdf.
 
@@ -272,12 +274,12 @@ Arguments:
 
   * `opfunc`: a function that takes a single input `X`, the point of evaluation, and returns `f(X)` and `df/dX`
   * `x`: the initial point
-  * `state`: a table describing the state of the optimizer; after each call the state is modified
-  * `state.learningRate`: learning rate
-  * `state.learningRateDecay`: learning rate decay
-  * `astate.weightDecay`: weight decay
-  * `state.momentum`: momentum
-  * `state.learningRates`: vector of individual learning rates
+  * `config`: a table with configuration parameters for the optimizer
+  * `config.learningRate`: learning rate
+  * `config.learningRateDecay`: learning rate decay
+  * `config.weightDecay`: weight decay
+  * `config.momentum`: momentum
+  * `config.learningRates`: vector of individual learning rates
 
 Returns:
 
@@ -286,7 +288,7 @@ Returns:
 
 
 <a name='optim.rmsprop'></a>
-## rmsprop(opfunc, x, config, state)
+## rmsprop(opfunc, x[, config][, state])
 
 An implementation of *RMSprop*.
 
@@ -309,21 +311,21 @@ Returns:
 
 
 <a name='optim.rprop'></a>
-## rprop(opfunc, x, config, state)
+## rprop(opfunc, x[, config][, state])
 
-A plain implementation of *Rprop* (Martin Riedmiller, Koray Kavukcuoglu 2013)
+A plain implementation of *Rprop* (Martin Riedmiller, Koray Kavukcuoglu 2013).
 
 Arguments:
 
   * `opfunc`: a function that takes a single input `X`, the point of evaluation, and returns `f(X)` and `df/dX`
   * `x`: the initial point
-  * `state`: a table describing the state of the optimizer; after each call the state is modified
-  * `state.stepsize`: initial step size, common to all components
-  * `state.etaplus`: multiplicative increase factor, > 1 (default 1.2)
-  * `state.etaminus`: multiplicative decrease factor, < 1 (default 0.5)
-  * `state.stepsizemax`: maximum stepsize allowed (default 50)
-  * `state.stepsizemin`: minimum stepsize allowed (default 1e-6)
-  * `state.niter`: number of iterations (default 1)
+  * `config`: a table with configuration parameters for the optimizer
+  * `config.stepsize`: initial step size, common to all components
+  * `config.etaplus`: multiplicative increase factor, > 1 (default 1.2)
+  * `config.etaminus`: multiplicative decrease factor, < 1 (default 0.5)
+  * `config.stepsizemax`: maximum stepsize allowed (default 50)
+  * `config.stepsizemin`: minimum stepsize allowed (default 1e-6)
+  * `config.niter`: number of iterations (default 1)
 
 Returns:
 
@@ -332,7 +334,7 @@ Returns:
 
 
 <a name='optim.cmaes'></a>
-## cmaes(opfunc, x, config, state)
+## cmaes(opfunc, x[, config][, state])
 
 An implementation of *CMAES* (*Covariance Matrix Adaptation Evolution Strategy*), ported from https://www.lri.fr/~hansen/barecmaes2.html.
 
@@ -341,8 +343,12 @@ Note that this method will on average take much more function evaluations to con
 
 Arguments:
 
+If `state` is specified, then `config` is not used at all.
+Otherwise `state` is `config`.
+
   * `opfunc`: a function that takes a single input `X`, the point of evaluation, and returns `f(X)` and `df/dX`. Note that `df/dX` is not used and can be left 0
   * `x`: the initial point
+  * `state`: a table describing the state of the optimizer; after each call the state is modified
   * `state.sigma`: float, initial step-size (standard deviation in each coordinate)
   * `state.maxEval`: int, maximal number of function evaluations
   * `state.ftarget`: float, target function value

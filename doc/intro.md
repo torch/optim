@@ -1,17 +1,18 @@
 <a name='optim.overview'></a>
-## Overview
+# Overview
 
 Most optimization algorithms have the following interface:
 
 ```lua
-x*, {f}, ... = optim.method(opfunc, x, state)
+x*, {f}, ... = optim.method(opfunc, x[, config][, state])
 ```
 
 where:
 
 * `opfunc`: a user-defined closure that respects this API: `f, df/dx = func(x)`
 * `x`: the current parameter vector (a 1D `Tensor`)
-* `state`: a table of parameters, and state variables, dependent upon the algorithm
+* `config`: a table of parameters, dependent upon the algorithm
+* `state`: a table of state variables, if `nil`, `config` will contain the state
 * `x*`: the new parameter vector that minimizes `f, x* = argmin_x f(x)`
 * `{f}`: a table of all `f` values, in the order they've been evaluated (for some simple algorithms, like SGD, `#f == 1`)
 
@@ -24,7 +25,7 @@ It's usually initialized once, by the user, and then passed to the optim functio
 Example:
 
 ```lua
-state = {
+config = {
    learningRate = 1e-3,
    momentum = 0.5
 }
@@ -34,7 +35,7 @@ for i, sample in ipairs(training_samples) do
        -- define eval function
        return f, df_dx
     end
-    optim.sgd(func, x, state)
+    optim.sgd(func, x, config)
 end
 ```
 
