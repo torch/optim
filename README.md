@@ -5,4 +5,4 @@ This package contains several optimization routines and a logger for [Torch](htt
 
  * [Overview](doc/intro.md);
  * [Optimization algorithms](doc/algos.md);
- * Logger.
+ * [Logger](doc/logger.md).
