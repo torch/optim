@@ -17,7 +17,7 @@ On output, `params` will contain these additional fields that can be reused.
 
 - `params.L`       : last used L value will be written.
 
-These are temporary storages needed by the algo and if the same params object is 
+These are temporary storages needed by the algo and if the same params object is
 passed a second time, these same storages will be used without new allocation.
 
 - `params.xkm`     : previous iterarion point
@@ -26,7 +26,7 @@ passed a second time, these same storages will be used without new allocation.
 
 Returns the solution x and history of {function evals, number of line search ,...}
 
-Algorithm is published in 
+Algorithm is published in
 
     @article{beck-fista-09,
        Author = {Beck, Amir and Teboulle, Marc},
@@ -38,7 +38,7 @@ Algorithm is published in
        Year = {2009}}
 ]]
 function optim.FistaLS(f, g, pl, xinit, params)
-   
+
    local params = params or {}
    local L = params.L or 0.1
    local Lstep = params.Lstep or 1.5
@@ -46,7 +46,7 @@ function optim.FistaLS(f, g, pl, xinit, params)
    local maxline = params.maxline or 20
    local errthres = params.errthres or 1e-4
    local doFistaUpdate = params.doFistaUpdate
-   local verbose = params.verbose 
+   local verbose = params.verbose
 
    -- temporary allocations
    params.xkm = params.xkm or torch.Tensor()
@@ -77,11 +77,11 @@ function optim.FistaLS(f, g, pl, xinit, params)
       -- get derivatives from smooth function
       local fy,gfy = f(y,'dx')
       --local gfy = f(y)
-      
+
       local fply = 0
       local gply = 0
       local Q = 0
-      
+
       ----------------------------------------------
       -- do line search to find new current location starting from fista loc
       local nline = 0
@@ -98,7 +98,7 @@ function optim.FistaLS(f, g, pl, xinit, params)
 
          -- evaluate this point F(ply)
          fply = f(ply)
-         
+
          -- ply - y
          ply:add(-1, y)
          -- <ply-y , \Grad(f(y))>
