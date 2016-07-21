@@ -200,6 +200,7 @@ Arguments:
   * `x`: the initial point
   * `config`: a table with configuration parameters for the optimizer
   * `config.learningRate`: learning rate
+  * `config.learningRateDecay`: learning rate decay
   * `config.beta1`: first moment coefficient
   * `config.beta2`: second moment coefficient
   * `config.epsilon`: for numerical stability
