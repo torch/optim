@@ -76,6 +76,7 @@ function Logger:setNames(names)
    end
    self.file:write('\n')
    self.file:flush()
+   return self
 end
 
 function Logger:add(symbols)
@@ -120,6 +121,7 @@ function Logger:style(symbols)
          xlua.error('style should be a string or a table of strings','Logger')
       end
    end
+   return self
 end
 
 function Logger:setlogscale(value)
