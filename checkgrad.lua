@@ -27,11 +27,12 @@ function optim.checkgrad(opfunc, x, eps)
     local eps = eps or 1e-7
     local dC_est = torch.Tensor():typeAs(dC):resizeAs(dC)
     for i = 1,dC:size(1) do
+      local tmp = x[i]
       x[i] = x[i] + eps
       local C1 = opfunc(x)
       x[i] = x[i] - 2 * eps
       local C2 = opfunc(x)
-      x[i] = x[i] + eps
+      x[i] = tmp
       dC_est[i] = (C1 - C2) / (2 * eps)
     end
 
