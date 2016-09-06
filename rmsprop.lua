@@ -29,6 +29,7 @@ function optim.rmsprop(opfunc, x, config, state)
    local alpha = config.alpha or 0.99
    local epsilon = config.epsilon or 1e-8
    local wd = config.weightDecay or 0
+   local mfill = config.initialMean or 0
 
    -- (1) evaluate f(x) and df/dx
    local fx, dfdx = opfunc(x)
@@ -40,7 +41,7 @@ function optim.rmsprop(opfunc, x, config, state)
 
    -- (3) initialize mean square values and square gradient storage
    if not state.m then
-      state.m = torch.Tensor():typeAs(x):resizeAs(dfdx):zero()
+      state.m = torch.Tensor():typeAs(x):resizeAs(dfdx):fill(mfill)
       state.tmp = torch.Tensor():typeAs(x):resizeAs(dfdx)
    end
 
