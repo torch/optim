@@ -124,8 +124,12 @@ function Logger:style(symbols)
    return self
 end
 
-function Logger:setlogscale(value)
-   self.logscale = value
+function Logger:setlogscale(state)
+   self.logscale = state
+end
+
+function Logger:display(state)
+   self.showPlot = state
 end
 
 function Logger:plot(...)
