@@ -71,3 +71,9 @@ logger:plot()
 ![Logging plot](logger_plot.png)
 
 If we'd like an interactive visualisation, we can put the `logger:plot()` instruction within the `for` loop, and the chart will be updated at every iteration.
+
+In case we'd like to prevent `gnuplot` to display the plots, we can set the option `logger:display(false)`.
+In this way, plots will be saved but not displayed.
+To restore the normal behaviour, use `logger:display(true)`.
+
+We can set a logarithmic *y* axis with `logger:setlogscale(true)` and reset it with `logger:setlogscale(false)`.
