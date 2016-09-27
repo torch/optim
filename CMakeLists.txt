@@ -12,3 +12,6 @@ SET(src)
 FILE(GLOB luasrc *.lua)
 ADD_TORCH_PACKAGE(optim "${src}" "${luasrc}")
 #ADD_TORCH_DOK(dok optim "Machine Learning" "Optimization" 3.2)
+
+INSTALL(DIRECTORY "doc" DESTINATION "${Torch_INSTALL_LUA_PATH_SUBDIR}/optim")
+INSTALL(FILES "README.md" DESTINATION "${Torch_INSTALL_LUA_PATH_SUBDIR}/optim")
