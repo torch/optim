@@ -256,7 +256,7 @@ function ConfusionMatrix:render(sortmode, display, block, legendwidth)
    -- legends
    local legend = {
       ['score'] = 'Confusion matrix [sorted by scores, global accuracy = %0.3f%%, per-class accuracy = %0.3f%%]',
-      ['occurrence'] = 'Confusiong matrix [sorted by occurences, accuracy = %0.3f%%, per-class accuracy = %0.3f%%]'
+      ['occurrence'] = 'Confusion matrix [sorted by occurrences, accuracy = %0.3f%%, per-class accuracy = %0.3f%%]'
    }
 
    -- parse matrix / normalize / count scores
