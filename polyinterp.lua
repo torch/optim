@@ -95,8 +95,6 @@ function optim.polyinterp(points,xminBound,xmaxBound)
    -- locals
    local sqrt = torch.sqrt
    local mean = torch.mean
-   -- local Tensor = torch.Tensor
-   -- local zeros = torch.zeros
    local max = math.max
    local min = math.min
 
@@ -169,13 +167,9 @@ function optim.polyinterp(points,xminBound,xmaxBound)
    end
 
    -- Find interpolating polynomial
-   -- print(A:size())
    local res = torch.gels(b,A)
    local params = res[{ {1,nPoints*2} }]:squeeze()
 
-   --print(A)
-   --print(b)
-   --print(params)
    params[torch.le(torch.abs(params),1e-12)]=0
 
    -- Compute Critical Points
@@ -189,13 +183,6 @@ function optim.polyinterp(points,xminBound,xmaxBound)
    if torch.ne(dParams,dParams):max() > 0 or torch.eq(dParams,math.huge):max() > 0 then
       nans = true
    end
-   -- for i = 1,dParams:size(1) do
-   --    if dParams[i] ~= dParams[i] or dParams[i] == math.huge then
-   --       nans = true
-   --       break
-   --    end
-   -- end
-   -- print(points)
 
    local cp = torch.cat(points.new{xminBound,xmaxBound},points[{{},1}])
    if not nans then
@@ -205,32 +192,20 @@ function optim.polyinterp(points,xminBound,xmaxBound)
       cp = torch.cat(cpi,cproots,1)
    end
 
-   --print(dParams)
-   --print(cp)
-
    -- Test Critical Points
    local fmin = math.huge
    -- Default to Bisection if no critical points valid:
    minPos = (xminBound+xmaxBound)/2
-   --print(minPos,fmin)
-   --print(xminBound,xmaxBound)
    for i = 1,cp:size(1) do
       local xCP = cp[{ {i,i} , {} }]
-      --print('xcp=')
-      --print(xCP)
       local ixCP = imag(xCP)[1]
       local rxCP = real(xCP)[1]
       if ixCP == 0 and rxCP >= xminBound and rxCP <= xmaxBound then
          local fCP = polyval(params,rxCP)
-	 --print('fcp=')
-	 --print(fCP)
-	 --print(fCP < fmin)
          if fCP < fmin then
             minPos = rxCP
             fmin = fCP
-	    --print('u',minPos,fmin)
          end
-	 --print('v',minPos,fmin)
       end
    end
    return minPos,fmin
