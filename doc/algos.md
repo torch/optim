@@ -269,7 +269,7 @@ Algorithm is published in http://epubs.siam.org/doi/abs/10.1137/080716542
 <a name='optim.nag'></a>
 ## nag(opfunc, x[, config][, state])
 
-An implementation of *SGD* adapted with features of *Nesterov's Accelerated Gradient method*, based on the paper "On the Importance of Initialization and Momentum in Deep Learning" (Sutsveker et. al., ICML 2013) http://www.cs.toronto.edu/~fritz/absps/momentum.pdf.
+An implementation of *SGD* adapted with features of *Nesterov's Accelerated Gradient method*, based on the paper "On the Importance of Initialization and Momentum in Deep Learning" (Sutskever et. al., ICML 2013) http://www.cs.toronto.edu/~fritz/absps/momentum.pdf.
 
 Arguments:
 
