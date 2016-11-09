@@ -64,7 +64,6 @@ function optim.eve(opfunc, x, config, state)
     state.v:mul(beta2):addcmul(1-beta2, dfdx, dfdx)
 
     state.denom = state.denom or x.new(dfdx:size()):zero()
-    state.denom:copy(state.v)
 
     if state.t == 1 then
         state.d = 1
@@ -87,11 +86,11 @@ function optim.eve(opfunc, x, config, state)
 
     local biasCorrection1 = 1 - beta1^state.t
     local biasCorrection2 = 1 - beta2^state.t
-    local stepSize = clr * state.d/math.sqrt(biasCorrection2) * biasCorrection1
-    state.denom:sqrt():add(eps)
+    local alpha = clr * math.sqrt(biasCorrection2) / biasCorrection1 / state.d
+    state.denom:copy(state.v):sqrt():add(eps)
 
     -- (4) update x
-    x:addcdiv(-stepSize, state.m, state.denom)
+    x:addcdiv(-alpha, state.m, state.denom)
 
     -- return x*, f(x) before optimization
     return x, {fx}
