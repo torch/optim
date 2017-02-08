@@ -180,6 +180,8 @@ Arguments:
   * `x`: the initial point
   * `config`: a table with configuration parameters for the optimizer
   * `config.learningRate`: learning rate
+  * `config.learningRateDecay`: learning rate decay
+  * `config.weightDecay`: weight decay coefficient for regularization
   * `state`: a table describing the state of the optimizer; after each call the state is modified
   * `state.paramVariance`: vector of temporal variances of parameters
 
@@ -201,6 +203,7 @@ Arguments:
   * `config`: a table with configuration parameters for the optimizer
   * `config.learningRate`: learning rate
   * `config.learningRateDecay`: learning rate decay
+  * `config.weightDecay`: weight decay coefficient for regularization
   * `config.beta1`: first moment coefficient
   * `config.beta2`: second moment coefficient
   * `config.epsilon`: for numerical stability
