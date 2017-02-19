@@ -24,7 +24,7 @@ RETURN:
 function optim.adam(opfunc, x, config, state)
    -- (0) get/update state
    local config = config or {}
-   local state = state or config
+   local state = state or {}
    local lr = config.learningRate or 0.001
    local lrd = config.learningRateDecay or 0
 
