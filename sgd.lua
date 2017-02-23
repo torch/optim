@@ -28,7 +28,7 @@ function optim.sgd(opfunc, x, config, state)
    -- (0) get/update state
    local config = config or {}
    local state = state or config
-   local lr = config.learningRate or 1e-3
+   local lr = config.learningRate ~= nil and config.learningRate or 1e-3
    local lrd = config.learningRateDecay or 0
    local wd = config.weightDecay or 0
    local mom = config.momentum or 0
@@ -79,7 +79,9 @@ function optim.sgd(opfunc, x, config, state)
       state.deltaParameters:copy(lrs):cmul(dfdx)
       x:add(-clr, state.deltaParameters)
    else
-      x:add(-clr, dfdx)
+      if clr ~= 0 then
+        x:add(-clr, dfdx)
+      end
    end
 
    -- (6) update evaluation counter
