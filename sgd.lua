@@ -31,11 +31,13 @@ function optim.sgd(opfunc, x, config, state)
    local lr = config.learningRate or 1e-3
    local lrd = config.learningRateDecay or 0
    local wd = config.weightDecay or 0
+   local L1coeff = config.L1coeff or 0
    local mom = config.momentum or 0
    local damp = config.dampening or mom
    local nesterov = config.nesterov or false
    local lrs = config.learningRates
    local wds = config.weightDecays
+   local L1coeffs = config.L1coeffs
    state.evalCounter = state.evalCounter or 0
    local nevals = state.evalCounter
    assert(not nesterov or (mom > 0 and damp == 0), "Nesterov momentum requires a momentum and zero dampening")
@@ -52,6 +54,13 @@ function optim.sgd(opfunc, x, config, state)
       end
       state.decayParameters:copy(wds):cmul(x)
       dfdx:add(state.decayParameters)
+   end
+
+   -- (2.1) L1 regularization
+   if L1coeff > 0 then
+       dfdx:add(L1coeff, torch.sign(x))
+   elseif L1coeffs then
+       dfdx:add(L1coeffs:cmul(torch.sign(x)))
    end
 
    -- (3) apply momentum
