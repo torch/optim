@@ -1,4 +1,4 @@
---[[ An implementation of Adam http://arxiv.org/pdf/1412.6980.pdf
+--[[ An implementation of Adam https://arxiv.org/abs/1412.6980
 
 ARGS:
 
